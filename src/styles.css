@@ -1,0 +1,108 @@
+@import "base.css";
+
+nav {
+  position: absolute;
+  inset: var(--space-2) auto auto 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+
+  & h2 {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+}
+
+.button-group {
+  display: inline-flex;
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  border: var(--border-1) solid var(--border-100);
+
+  & input[type="radio"] {
+    display: none;
+  }
+
+  & label {
+    padding: var(--space-2) var(--space-4);
+    cursor: pointer;
+    background-color: var(--surface-100);
+    border-right: var(--border-1) solid var(--border-100);
+    user-select: none;
+    font-size: 0.875rem;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  & input[type="radio"] {
+
+    &:checked+label {
+      background-color: var(--active);
+      color: white;
+      border-color: var(--active);
+    }
+
+    &:not(:checked)+label:hover {
+      background-color: color-mix(in hsl, var(--active), transparent 60%);
+    }
+  }
+}
+
+main {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-3);
+  gap: var(--space-3);
+  height: 100%;
+}
+
+kbd {
+  background-color: var(--surface-100);
+  color: var(--text-light);
+  border-radius: var(--radius-1);
+  padding: 0 var(--space-1);
+  border: 1px solid var(--border-100);
+  box-shadow: 0 3px 0 0 var(--border-100);
+  font-family: "JetBrains Mono", monospace;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#help {
+  position: absolute;
+  inset: var(--space-2) var(--space-2) auto auto;
+  padding: var(--space-3);
+  font-size: 0.7rem;
+  z-index: 1;
+  border: var(--border-1) solid var(--border-100);
+  border-radius: var(--radius-1);
+  background-color: hsl(0 100% 100% / 0.07);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  & h2 {
+    font-size: 0.8rem;
+  }
+
+  & h2:first-of-type {
+    margin-top: 0;
+  }
+
+  & ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  & li {
+    margin-bottom: calc(1.5*var(--space-2));
+  }
+}
