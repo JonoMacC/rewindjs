@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Undo Redo Prototype</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Metamorphous&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav>
+      <h2>Bubbling Mode</h2>
+      <div class="button-group">
+        <input type="radio" name="bubble_mode" id="board1" value="1" checked />
+        <label
+          for="board1"
+          title="Undo events do not bubble up to the parent board."
+          >Never</label
+        >
+
+        <input type="radio" name="bubble_mode" value="2" id="board2" />
+        <label
+          for="board2"
+          title="Undo events bubble up to the parent board if the tile has no more history to undo."
+          >On End</label
+        >
+
+        <input type="radio" name="bubble_mode" value="3" id="board3" />
+        <label
+          for="board3"
+          title="Undo events bubble up to the parent board unconditionally."
+          >Always</label
+        >
+      </div>
+    </nav>
+    <main>
+      <section id="help">
+        <section>
+          <h2>Tile</h2>
+          <ul>
+            <li>
+              <kbd>↑</kbd>, <kbd>↓</kbd>, <kbd>←</kbd>, <kbd>→</kbd> to move
+            </li>
+            <li><kbd>Ctrl</kbd> <kbd>Z</kbd> to undo</li>
+            <li>
+              <kbd>Ctrl</kbd> <kbd>Y</kbd> or <kbd>Ctrl</kbd> <kbd>Shift</kbd>
+              <kbd>Z</kbd> to redo
+            </li>
+            <li><kbd>Enter</kbd> to record a change to the board</li>
+            <li><kbd>Delete</kbd> or <kbd>Backspace</kbd> to delete a tile</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Board</h2>
+          <ul>
+            <li><kbd>Ctrl</kbd> <kbd>Z</kbd> to undo</li>
+            <li>
+              <kbd>Ctrl</kbd> <kbd>Y</kbd> or <kbd>Ctrl</kbd> <kbd>Shift</kbd>
+              <kbd>Z</kbd> to redo
+            </li>
+            <li><kbd>Shift</kbd> <kbd>Enter</kbd> to spawn a new tile</li>
+          </ul>
+        </section>
+      </section>
+      <gx-shell label="1 - Never Bubbles"
+        ><gx-board id="board-1">
+          <gx-tile top="80" left="20"> a </gx-tile>
+          <gx-tile top="120" left="120"> b </gx-tile>
+          <gx-tile top="240" left="120"> c </gx-tile>
+          <gx-tile top="280" left="260"> d </gx-tile>
+        </gx-board></gx-shell
+      >
+      <gx-shell label="2 - Bubbles on End" hidden
+        ><gx-board id="board-2">
+          <gx-tile top="80" left="20"> a </gx-tile>
+          <gx-tile top="120" left="120"> b </gx-tile>
+          <gx-tile top="240" left="120"> c </gx-tile>
+          <gx-tile top="280" left="260"> d </gx-tile>
+        </gx-board></gx-shell
+      >
+      <gx-shell label="3 - Always Bubbles" hidden
+        ><gx-board id="board-3">
+          <gx-tile top="80" left="20"> a </gx-tile>
+          <gx-tile top="120" left="120"> b </gx-tile>
+          <gx-tile top="240" left="120"> c </gx-tile>
+          <gx-tile top="280" left="260"> d </gx-tile>
+        </gx-board></gx-shell
+      >
+    </main>
+  </body>
+  <script type="module" src="script.js"></script>
+</html>
