@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Rewind } from "../Rewind.js";
+import { JSDOM } from "jsdom";
+import { rewind } from "../rewind.js";
+
+// Set up a DOM environment
+const { window } = new JSDOM();
+global.window = window;
+global.document = window.document;
+global.HTMLElement = window.HTMLElement;
 
 class TestComponent {
   #content = "";
@@ -43,9 +50,6 @@ class TestComponent {
     this.#top = top;
     this.#left = left;
   }
-
-  connectedCallback() {}
-  disconnectedCallback() {}
 }
 
 describe("Rewind", () => {
@@ -53,17 +57,14 @@ describe("Rewind", () => {
   let component;
 
   beforeEach(() => {
-    RewindTestComponent = Rewind(TestComponent, {
-      snapshot: ["content", "top", "left", "selected"],
+    RewindTestComponent = rewind(TestComponent, {
+      observe: ["content", "top", "left", "selected"],
       coalesce: ["setPosition"],
       debounce: {
-        top: "none",
-        left: "none",
-        selected: "none",
+        content: 400,
       },
     });
     component = new RewindTestComponent();
-    component.connectedCallback();
   });
 
   it("should record initial state", () => {
@@ -143,13 +144,12 @@ describe("Rewind", () => {
     ];
     const index = 1;
 
-    RewindTestComponent = Rewind(TestComponent, {
-      snapshot: ["content", "top", "left", "selected"],
+    RewindTestComponent = rewind(TestComponent, {
+      observe: ["content", "top", "left", "selected"],
       history,
       index,
     });
     component = new RewindTestComponent();
-    component.connectedCallback();
 
     expect(component.rewindHistory).toEqual(history);
 
@@ -184,5 +184,35 @@ describe("Rewind", () => {
     expect(component.top).toBe(20);
     expect(component.left).toBe(20);
     expect(component.selected).toBe(false);
+  });
+
+  it("should record a change made at the end of the redo stack", () => {
+    const history = [
+      { content: "He" },
+      { content: "Hell" },
+      { content: "Hello" },
+    ];
+    const index = 2;
+
+    RewindTestComponent = rewind(TestComponent, {
+      observe: ["content"],
+      history,
+      index,
+    });
+    component = new RewindTestComponent();
+
+    // Undo to initial state and redo to the end
+    component.undo().undo().redo().redo();
+
+    // Verify that we have returned to the last state
+    expect(component.rewindHistory.length).toBe(3);
+    expect(component.rewindHistory[2].content).toBe("Hello");
+    expect(component.rewindIndex).toBe(2);
+
+    // Set the content to a new value
+    component.content = "Hello World";
+    expect(component.rewindHistory.length).toBe(4);
+    expect(component.rewindHistory[3].content).toBe("Hello World");
+    expect(component.rewindIndex).toBe(3);
   });
 });
