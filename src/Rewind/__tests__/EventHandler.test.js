@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { JSDOM } from "jsdom";
-import { RewindEventHandler } from "../RewindEventHandler";
+import { EventHandler } from "../EventHandler";
 
-describe("RewindEventHandler", () => {
+describe("EventHandler", () => {
   let window;
   let document;
   let target;
@@ -10,7 +10,7 @@ describe("RewindEventHandler", () => {
 
   beforeEach(() => {
     // Create a new JSDOM instance for each test
-    const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
+    const dom = new JSDOM("<!DOCTYPE html><html lang='en'><body></body></html>", {
       url: "http://localhost",
     });
     window = dom.window;
@@ -22,7 +22,7 @@ describe("RewindEventHandler", () => {
     global.CustomEvent = window.CustomEvent;
 
     target = document.createElement("div");
-    handler = new RewindEventHandler(target);
+    handler = new EventHandler(target);
   });
 
   afterEach(() => {
@@ -34,15 +34,15 @@ describe("RewindEventHandler", () => {
   });
 
   it("should create an instance with default key mappings", () => {
-    expect(handler).toBeInstanceOf(RewindEventHandler);
+    expect(handler).toBeInstanceOf(EventHandler);
   });
 
   it("should replace default keys with custom keys", () => {
     const customKeys = { undo: ["Ctrl+U"], redo: ["Ctrl+R"] };
-    const customHandler = new RewindEventHandler(target, customKeys);
+    const customHandler = new EventHandler(target, customKeys);
 
     const partialCustomKeys = { undo: ["Ctrl+U"] };
-    const partialCustomHandler = new RewindEventHandler(
+    const partialCustomHandler = new EventHandler(
       target,
       partialCustomKeys
     );
@@ -64,7 +64,7 @@ describe("RewindEventHandler", () => {
     });
     const spy = vi.fn();
 
-    target.addEventListener(RewindEventHandler.UNDO_EVENT, spy);
+    target.addEventListener(EventHandler.UNDO_EVENT, spy);
     target.dispatchEvent(event);
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -78,7 +78,7 @@ describe("RewindEventHandler", () => {
     });
     const spy = vi.fn();
 
-    target.addEventListener(RewindEventHandler.REDO_EVENT, spy);
+    target.addEventListener(EventHandler.REDO_EVENT, spy);
     target.dispatchEvent(event);
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -93,8 +93,8 @@ describe("RewindEventHandler", () => {
     const undoSpy = vi.fn();
     const redoSpy = vi.fn();
 
-    target.addEventListener(RewindEventHandler.UNDO_EVENT, undoSpy);
-    target.addEventListener(RewindEventHandler.REDO_EVENT, redoSpy);
+    target.addEventListener(EventHandler.UNDO_EVENT, undoSpy);
+    target.addEventListener(EventHandler.REDO_EVENT, redoSpy);
     target.dispatchEvent(event);
 
     expect(undoSpy).not.toHaveBeenCalled();
@@ -110,7 +110,7 @@ describe("RewindEventHandler", () => {
     originalEvent.stopPropagation = vi.fn();
     const undoSpy = vi.fn();
 
-    target.addEventListener(RewindEventHandler.UNDO_EVENT, undoSpy);
+    target.addEventListener(EventHandler.UNDO_EVENT, undoSpy);
 
     target.dispatchEvent(originalEvent);
 
