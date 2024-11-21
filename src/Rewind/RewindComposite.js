@@ -1,18 +1,35 @@
-import { Rewind } from "./Rewind.js";
-import { deepEqual, randomId } from "../util/math.js";
+import {rewind} from "./rewind.js";
 
-export function RewindComposite(BaseComponent) {
-  return class extends Rewind(BaseComponent) {
+// Utilities
+import cel from "../lib/celerity/cel.js";
+
+// Components
+import {DOMElement} from "./DOMElement.js";
+
+const scheduleNextFrame =
+  typeof requestAnimationFrame !== "undefined"
+    ? requestAnimationFrame
+    : (cb) => setTimeout(cb, 0);
+
+export function RewindComposite(target, ElementClass = DOMElement) {
+  return class extends rewind(target) {
     #initialized = false;
     #selectors;
     #createChild;
     #childOptions;
+    #focusable;
+    #element;
 
     constructor(options = {}) {
       super();
       this.#selectors = options.selectors || [];
       this.#createChild = options.createChild || this.defaultCreateChild;
       this.#childOptions = options.childOptions || {};
+      this.#focusable =
+        typeof document !== "undefined" &&
+        typeof this.focus === "function" &&
+        this instanceof HTMLElement;
+      this.#element = new ElementClass(this);
     }
 
     defaultCreateChild(initialState, initialHistory, options) {
@@ -27,11 +44,19 @@ export function RewindComposite(BaseComponent) {
 
     get #children() {
       if (this.#selectors.length === 0) {
-        return Array.from(this.children);
+        return this.#element.children;
       }
 
-      return Array.from(this.children).filter((child) =>
-        this.#selectors.some((selector) => child.matches(selector))
+      return this.#element.children.filter((child) =>
+        this.#selectors.some((selector) => {
+          console.log("Selector:", selector, "Type:", typeof selector);
+          try {
+            return this.#element.matches(child, selector);
+          } catch (error) {
+            console.error("Error in matches:", error);
+            return false;
+          }
+        })
       );
     }
 
@@ -54,21 +79,21 @@ export function RewindComposite(BaseComponent) {
       };
     }
 
-    set snapshot(newSnapshot) {
+    set snapshot(newState) {
       const currentChildren = new Set(this.#children.map((child) => child.id));
-      const snapshotChildren = new Set(newSnapshot.children.keys());
+      const snapshotChildren = new Set(newState.children.keys());
 
       // Remove children that are not in the snapshot
       for (const childId of currentChildren) {
         if (!snapshotChildren.has(childId)) {
-          const child = this.querySelector(`#${childId}`);
+          const child = this.#element.find(`#${childId}`);
           child.remove();
         }
       }
 
       // Add or update children from the snapshot
-      for (const [childId, childSnapshot] of newSnapshot.children) {
-        let child = this.querySelector(`#${childId}`);
+      for (const [childId, childSnapshot] of newState.children) {
+        let child = this.#element.find(`#${childId}`);
 
         if (!child) {
           child = this.#restore(childId, childSnapshot);
@@ -76,7 +101,7 @@ export function RewindComposite(BaseComponent) {
           // Move existing child to correct position if needed
           const currentIndex = this.#children.indexOf(child);
           if (currentIndex !== childSnapshot.position) {
-            this.insertBefore(
+            this.#element.insert(
               child,
               this.#children[childSnapshot.position] || null
             );
@@ -86,7 +111,7 @@ export function RewindComposite(BaseComponent) {
         // Update child's state if needed
         if (
           child.rewindIndex !== childSnapshot.index ||
-          !deepEqual(child.rewindHistory, childSnapshot.history)
+          !cel.deepEqual(child.rewindHistory, childSnapshot.history)
         ) {
           child.rewindHistory = childSnapshot.history;
           child.travel(childSnapshot.index);
@@ -95,21 +120,23 @@ export function RewindComposite(BaseComponent) {
     }
 
     delete(event) {
-      const child = event.target.closest(this.#selectors.join(","));
+      console.log({ selectors: this.#selectors });
+      const selectorString = this.#selectors.join(",");
+      console.log({ selectorString });
+      const child = event.target.closest(selectorString);
       if (!child) return;
 
-      const previousChild = child.previousElementSibling;
+      const previousChild = this.#element.previous(child);
 
       this.record();
 
-      // Remove child
-      child.remove();
+      this.#element.remove(child);
 
       // Focus previous child if any, else focus this
       if (previousChild) {
         previousChild.focus();
       } else {
-        this.focus();
+        this.#focusable && this.focus();
       }
 
       return this;
@@ -124,33 +151,31 @@ export function RewindComposite(BaseComponent) {
       });
       console.log(child);
       if (!("id" in child) || !child.id) {
-        child.id = randomId();
+        child.id = cel.randomId();
       }
-      this.appendChild(child);
+      this.#element.append(child);
       this.record();
       return child;
     }
 
     #restore(childId, childSnapshot) {
       const { history, index, position } = childSnapshot;
-      let mergedHistory = history;
 
       // If a more recent child history exists, merge it
       const recentHistory = this.#lastChildHistory(childId);
-      mergedHistory = this.#mergeHistories(history, recentHistory);
-
+      const mergedHistory = this.#mergeHistories(history, recentHistory);
       const child = this.#createChild(
         mergedHistory[index],
         mergedHistory,
         this.#childOptions
       );
 
-      // Insert child in correct position in the DOM
-      const referenceNode = this.children[position];
+      // Insert child in correct position using the ChildManager
+      const referenceNode = this.#element.children[position];
       if (referenceNode) {
-        this.insertBefore(child, referenceNode);
+        this.#element.insert(child, referenceNode);
       } else {
-        this.appendChild(child);
+        this.#element.append(child);
       }
 
       child.id = childId;
@@ -164,8 +189,7 @@ export function RewindComposite(BaseComponent) {
       for (let i = this.rewindIndex; i >= 0; i--) {
         const history = this.rewindHistory[i];
         if (history.children.has(id)) {
-          const childHistory = history.children.get(id).history;
-          return childHistory;
+          return history.children.get(id).history;
         }
       }
 
@@ -176,7 +200,7 @@ export function RewindComposite(BaseComponent) {
       if (b === undefined || b === null) return a;
       // Find the last common state between the two histories
       const lastCommonIndex =
-        a.findIndex((state, index) => !deepEqual(state, b[index])) - 1;
+        a.findIndex((state, index) => !cel.deepEqual(state, b[index])) - 1;
 
       // Merge the histories, keeping all states after the last common one
       return [
@@ -198,7 +222,7 @@ export function RewindComposite(BaseComponent) {
         this.record();
       } else {
         // If not all children are ready, retry in the next frame
-        requestAnimationFrame(() => this.#initialize());
+        scheduleNextFrame(() => this.#initialize());
       }
     }
   };
