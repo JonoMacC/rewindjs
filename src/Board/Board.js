@@ -1,44 +1,43 @@
 import { RewindComposite } from "../Rewind/RewindComposite.js";
-import { keyCombo, alphaLabel } from "../util/string.js";
-import { randomId } from "../util/math.js";
+
+// Components
 import Tile from "../Tile/Tile.js";
+
+// Utilities
+import cel from "../lib/celerity/cel.js";
 
 class BaseBoard extends HTMLElement {
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.innerHTML = `<slot></slot>`;
     this.tabIndex = 0;
-    this.id = randomId();
-  }
-
-  connectedCallback() {
-    // Create link for style
-    const link = document.createElement("link");
-    link.setAttribute("rel", "stylesheet");
-    link.setAttribute("href", "./Board/Board.css");
-
-    // Append style
-    this.shadowRoot.append(link);
+    this.id = cel.randomId();
   }
 }
 
 export default class Board extends RewindComposite(BaseBoard) {
-  #keys = new Set(["Shift+Enter", "Backspace", "Delete"]);
-
+  #keys;
+  #keyMap = {
+    insertKey: ["Shift+Enter"],
+    deleteKey: ["Backspace", "Delete"],
+  };
   constructor() {
     super({
       selectors: ["gx-tile"],
       createChild: (initialState, options) => {
         const tile = new Tile(initialState);
-        tile.id = randomId();
+        tile.id = cel.randomId();
         if (!initialState.label) {
-          tile.label = alphaLabel(this.children.length + 1);
+          tile.label = cel.alphaLabel(this.children.length + 1);
         }
         return tile;
       },
       childOptions: {},
     });
+    this.#keys = new Set(Object.values(this.#keyMap).flat());
+    this.keyHandlers = {
+      insertKey: this.spawnTile.bind(this),
+      deleteKey: this.delete.bind(this),
+    };
   }
 
   spawnTile() {
@@ -48,7 +47,7 @@ export default class Board extends RewindComposite(BaseBoard) {
     const initialState = {
       top: this.offsetHeight / 2 - tileHeight / 2,
       left: this.offsetWidth / 2 - tileWidth / 2,
-      label: alphaLabel(this.children.length + 1),
+      label: cel.alphaLabel(this.children.length + 1),
     };
 
     const tile = this.spawn(initialState);
@@ -57,22 +56,15 @@ export default class Board extends RewindComposite(BaseBoard) {
   }
 
   #handleKeydown(event) {
-    const eventKeyCombo = keyCombo(event);
-    if (!this.#keys.has(eventKeyCombo)) return;
+    const key = cel.keyCombo(event);
+    if (!this.#keys.has(key)) return;
 
-    const keyHandlers = {
-      "Shift+Enter": () => {
-        this.spawnTile();
-      },
-      Backspace: () => {
-        this.delete(event);
-      },
-      Delete: () => {
-        this.delete(event);
-      },
-    };
-
-    keyHandlers[eventKeyCombo](event);
+    for (const [action, keys] of Object.entries(this.#keyMap)) {
+      if (keys.includes(key)) {
+        this.keyHandlers[action]();
+        return;
+      }
+    }
   }
 
   #handleChange() {

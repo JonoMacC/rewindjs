@@ -1,4 +1,4 @@
-:host {
+gx-board {
   width: 375px;
   height: 375px;
   border: 2px solid var(--border-000);
@@ -13,11 +13,11 @@
   border-radius: var(--radius-2);
   outline: none;
   box-shadow: none;
-}
 
-:host(:focus),
-:host(:focus-within),
-:host(:focus-visible) {
-  outline: none;
-  box-shadow: none;
+  &:focus,
+  &:focus-within,
+  &:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
 }
