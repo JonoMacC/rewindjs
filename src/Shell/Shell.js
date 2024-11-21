@@ -2,15 +2,12 @@ class Shell extends HTMLElement {
   #label = "";
   constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
     this.#label = "";
-    this.shadow.innerHTML = `
-    <header>
-    <h2>${this.label}</h2>
-    </header>
-    <slot></slot>
-    `;
     this.tabIndex = -1;
+  }
+
+  get #heading() {
+    return this.querySelector("header h2");
   }
 
   get label() {
@@ -19,7 +16,13 @@ class Shell extends HTMLElement {
 
   set label(value) {
     this.#label = value;
-    this.shadow.querySelector("header h2").textContent = this.#label;
+    if (!this.#heading) {
+      const h2 = document.createElement("h2");
+      const header = document.createElement("header");
+      header.append(h2);
+      this.insertBefore(header, this.firstChild);
+    }
+    this.#heading.textContent = this.#label;
   }
 
   static get observedAttributes() {
@@ -37,16 +40,8 @@ class Shell extends HTMLElement {
       }
     }
   }
-
-  connectedCallback() {
-    // Create link for style
-    const link = document.createElement("link");
-    link.setAttribute("rel", "stylesheet");
-    link.setAttribute("href", "./Shell/Shell.css");
-
-    // Append style
-    this.shadowRoot.append(link);
-  }
 }
 
 customElements.define("gx-shell", Shell);
+
+export default Shell;

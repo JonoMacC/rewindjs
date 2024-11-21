@@ -1,4 +1,4 @@
-:host {
+gx-shell {
   width: 420px;
   height: 420px;
   flex-shrink: 0;
@@ -9,9 +9,9 @@
   position: relative;
   background-color: var(--surface-000);
   border-radius: 10px;
-  box-shadow: 0px 0px 3px 0px rgba(255, 255, 255, 0.10) inset,
-    0px 8px 40px 0px rgba(0, 0, 0, 0.05),
-    0px 0px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 3px 0 rgba(255, 255, 255, 0.10) inset,
+    0 8px 40px 0 rgba(0, 0, 0, 0.05),
+    0 0 3px 0 rgba(0, 0, 0, 0.15);
   overflow: hidden;
 
   &>header {
@@ -31,11 +31,11 @@
       -webkit-user-select: none;
     }
   }
-}
 
-:host(:focus),
-:host(:focus-within) {
-  box-shadow: 0px 0px 3px 0px rgba(255, 255, 255, 0.10) inset,
-    0px 8px 40px 0px rgba(0, 0, 0, 0.25),
-    0px 0px 3px 0px rgba(0, 0, 0, 0.55);
+  &:focus,
+  &:focus-within {
+    box-shadow: 0 0 3px 0 rgba(255, 255, 255, 0.10) inset,
+      0 8px 40px 0 rgba(0, 0, 0, 0.25),
+      0 0 3px 0 rgba(0, 0, 0, 0.55);
+  }
 }
