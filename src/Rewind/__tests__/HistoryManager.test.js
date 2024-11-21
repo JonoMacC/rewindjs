@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { RewindCore, UndoModel } from "../RewindCore";
+import { HistoryManager, UndoModel } from "../HistoryManager";
 
-describe("RewindCore", () => {
+describe("HistoryManager", () => {
   let rewind;
 
   beforeEach(() => {
-    rewind = new RewindCore();
+    rewind = new HistoryManager();
   });
 
   it("should record states and allow undo/redo", () => {
@@ -21,8 +21,8 @@ describe("RewindCore", () => {
     rewind.record({ text: "Hello Worl" });
     rewind.record({ text: "Hello World" });
 
-    expect(rewind.currentState).toEqual({ text: "Hello World" });
-    expect(rewind.currentIndex).toBe(10);
+    expect(rewind.state).toEqual({ text: "Hello World" });
+    expect(rewind.index).toBe(10);
 
     expect(rewind.undo()).toEqual({ text: "Hello Worl" });
     expect(rewind.undo()).toEqual({ text: "Hello Wor" });
@@ -32,8 +32,8 @@ describe("RewindCore", () => {
     expect(rewind.undo()).toEqual({ text: "Hello Worl" });
     rewind.record({ text: "Hello World!" });
 
-    expect(rewind.currentState).toEqual({ text: "Hello World!" });
-    expect(rewind.currentIndex).toBe(10);
+    expect(rewind.state).toEqual({ text: "Hello World!" });
+    expect(rewind.index).toBe(10);
   });
 
   it("should not record duplicate states", () => {
@@ -46,7 +46,7 @@ describe("RewindCore", () => {
     rewind.record({ text: "Hello" });
     rewind.record({ text: "Hello World" });
     expect(rewind.travel(0)).toEqual({ text: "Hello" });
-    expect(rewind.currentIndex).toBe(0);
+    expect(rewind.index).toBe(0);
   });
 
   it("should drop states correctly", () => {
@@ -54,12 +54,12 @@ describe("RewindCore", () => {
     rewind.record({ text: "Hello World" });
     rewind.drop(0);
     expect(rewind.history.length).toBe(1);
-    expect(rewind.currentState).toEqual({ text: "Hello World" });
+    expect(rewind.state).toEqual({ text: "Hello World" });
   });
 
   it("should handle different undo models", () => {
-    const linearRewind = new RewindCore(UndoModel.LINEAR);
-    const historyRewind = new RewindCore(UndoModel.HISTORY);
+    const linearRewind = new HistoryManager(UndoModel.LINEAR);
+    const historyRewind = new HistoryManager(UndoModel.HISTORY);
 
     linearRewind.record({ text: "Hello" });
     linearRewind.record({ text: "Hello World" });
