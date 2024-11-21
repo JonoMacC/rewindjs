@@ -1,21 +1,49 @@
-import { Rewind } from "../Rewind/Rewind.js";
-import { keyCombo } from "../util/string.js";
-import { randomId } from "../util/math.js";
+import { rewind } from "../Rewind/rewind.js";
+
+// Utilities
+import cel from "../lib/celerity/cel.js";
 
 class BaseTile extends HTMLElement {
   #keys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"]);
-
-  constructor(config = {}) {
+  #keyMap = {
+    submitKey: ["Enter"],
+    leftKey: ["ArrowLeft"],
+    upKey: ["ArrowUp"],
+    rightKey: ["ArrowRight"],
+    downKey: ["ArrowDown"],
+  };
+  constructor() {
     super();
-    this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.innerHTML = `<slot></slot>`;
     this.tabIndex = 0;
-    this.id = randomId();
+    this.id = cel.randomId();
 
-    // Initialize properties with config values or defaults
-    this.top = config.top !== undefined ? config.top : 0;
-    this.left = config.left !== undefined ? config.left : 0;
-    this.label = config.label || "";
+    // Initialize properties with attribute values or defaults
+    this.top =
+      this.getAttribute("top") !== null
+        ? parseInt(this.getAttribute("top"))
+        : 0;
+    this.left =
+      this.getAttribute("left") !== null
+        ? parseInt(this.getAttribute("left"))
+        : 0;
+    this.label =
+      this.getAttribute("label") !== null ? this.getAttribute("label") : "";
+
+    this.keyHandlers = {
+      submitKey: this.#handleChange.bind(this),
+      upKey: () => {
+        this.top -= 10;
+      },
+      downKey: () => {
+        this.top += 10;
+      },
+      leftKey: () => {
+        this.left -= 10;
+      },
+      rightKey: () => {
+        this.left += 10;
+      },
+    };
   }
 
   set top(value) {
@@ -42,33 +70,16 @@ class BaseTile extends HTMLElement {
     return this.textContent;
   }
 
-  static get observedAttributes() {
-    return ["top", "left", "label"];
-  }
-
   #handleKeydown(event) {
-    const eventKeyCombo = keyCombo(event);
-    if (!this.#keys.has(eventKeyCombo)) return;
+    const key = cel.keyCombo(event);
+    if (!this.#keys.has(key)) return;
 
-    const keyHandlers = {
-      Enter: () => {
-        this.#handleChange();
-      },
-      ArrowUp: () => {
-        this.top -= 10;
-      },
-      ArrowDown: () => {
-        this.top += 10;
-      },
-      ArrowLeft: () => {
-        this.left -= 10;
-      },
-      ArrowRight: () => {
-        this.left += 10;
-      },
-    };
-
-    keyHandlers[eventKeyCombo](event);
+    for (const [action, keys] of Object.entries(this.#keyMap)) {
+      if (keys.includes(key)) {
+        this.keyHandlers[action]();
+        return;
+      }
+    }
   }
 
   #handleChange() {
@@ -84,37 +95,17 @@ class BaseTile extends HTMLElement {
     // Remove initialization from attributes
     this.addEventListener("keydown", this.#handleKeydown);
     this.addEventListener("focusout", this.#handleChange);
-
-    // Create link for style
-    const link = document.createElement("link");
-    link.setAttribute("rel", "stylesheet");
-    link.setAttribute("href", "./Tile/Tile.css");
-
-    // Append style
-    this.shadowRoot.append(link);
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue === newValue) return;
-    this[name] = newValue;
   }
 
   disconnectedCallback() {
-    this.removeEventListener("keydown", this.handleKeydown);
-    this.removeEventListener("focusout", this.handleChange);
+    this.removeEventListener("keydown", this.#handleKeydown);
+    this.removeEventListener("focusout", this.#handleChange);
   }
 }
 
-const Tile = Rewind(
-  class extends BaseTile {
-    constructor(config = {}) {
-      super(config);
-    }
-  },
-  {
-    snapshot: ["top", "left", "label"],
-  }
-);
+const Tile = rewind(BaseTile, {
+  observe: ["top", "left", "label"],
+});
 
 customElements.define("gx-tile", Tile);
 

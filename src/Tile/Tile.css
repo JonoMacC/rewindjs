@@ -1,4 +1,4 @@
-:host {
+gx-tile {
   font-family: "Metamorphous", serif;
   font-size: 2rem;
   width: 80px;
@@ -10,7 +10,7 @@
   top: 0;
   left: 0;
   cursor: pointer;
-  outline-offset: 0px;
+  outline-offset: 0;
   border: 2px solid var(--border-100);
   border-radius: var(--radius-1);
   display: flex;
@@ -21,6 +21,38 @@
   --webkit-user-select: none;
   overflow: hidden;
   transition: outline 100ms ease, box-shadow 100ms ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(to top,
+        var(--spotlight),
+        transparent);
+    opacity: 0.5;
+  }
+
+  &:hover {
+    outline-color: var(--active);
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: -1px;
+  }
+
+  &:focus {
+    z-index: 1;
+    background-color: color-mix(in hsl,
+        var(--surface-100),
+        transparent 20%);
+    outline-color: var(--active);
+    outline-width: 2px;
+    outline-style: solid;
+    outline-offset: 0;
+    box-shadow: 0 0 0 6px color-mix(in hsl,
+        var(--active),
+        transparent 80%);
+  }
 }
 
 :host(::after) {
@@ -32,25 +64,4 @@
       var(--spotlight),
       transparent);
   opacity: 0.5;
-}
-
-:host(:hover) {
-  outline-color: var(--active);
-  outline-width: 1px;
-  outline-style: solid;
-  outline-offset: -1px;
-}
-
-:host(:focus) {
-  z-index: 1;
-  background-color: color-mix(in hsl,
-      var(--surface-100),
-      transparent 20%);
-  outline-color: var(--active);
-  outline-width: 2px;
-  outline-style: solid;
-  outline-offset: 0px;
-  box-shadow: 0 0 0 6px color-mix(in hsl,
-      var(--active),
-      transparent 80%);
 }
