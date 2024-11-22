@@ -57,6 +57,13 @@ describe("HistoryManager", () => {
     expect(rewind.state).toEqual({ text: "Hello World" });
   });
 
+  it("should allow the history to be set", () => {
+    rewind.history = [{ text: "Hello" }, { text: "Hello World" }];
+    expect(rewind.history.length).toBe(2);
+    expect(rewind.travel(0)).toEqual({ text: "Hello" });
+    expect(rewind.travel(1)).toEqual({ text: "Hello World" });
+  });
+
   it("should handle different undo models", () => {
     const linearRewind = new HistoryManager(UndoModel.LINEAR);
     const historyRewind = new HistoryManager(UndoModel.HISTORY);
