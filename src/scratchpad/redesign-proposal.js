@@ -1,5 +1,5 @@
-import {HistoryManager} from "../Rewind/HistoryManager.js";
-import {StateManager} from "../Rewind/StateManager.js";
+import {Rewindable} from "../Rewind/createRewindable.js";
+import {EventHandler} from "../Rewind/EventHandler.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";
@@ -16,151 +16,126 @@ import cel from "../lib/celerity/cel.js";
  */
 
 /**
- * @typedef {Object} RewindOptions
+ * @typedef {Object} RewindElementOptions
  * @property {UndoModel} [model='linear'] - Undo model
- * @property {string[]} [observe=[]] - Properties to observe
- * @property {Accessor} [accessor] - Custom state accessor
+ * @property {string[]} [observe=[]] - Properties to observe with auto-recording
+ * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
+ * @property {Accessor} [accessor] - Custom state accessor for manual recording
  * @property {Object[]} [history=[]] - Initial history
  * @property {number} [index=undefined] - Initial index
+ * @property {Object<string, number>} [debounce={}] - Debounce times for properties
+ * @property {UndoKeys} [keys] - Keyboard shortcuts configuration
  */
-
-/**
- * Manages undo/redo functionality for a target object
- */
-class Rewindable {
-  #historyManager;
-  #stateManager;
-  #recording = true;
+class RewindableElement {
+  #rewindable;
+  #element;
+  #eventHandler;
+  #propertyHandlers = new Map();
 
   /**
-   * @param {Object} target - Object to make rewindable
-   * @param {RewindOptions} options - Configuration options
+   * @param {HTMLElement} element - DOM element to make rewindable
+   * @param {RewindElementOptions} options - Configuration options
    */
-  constructor(target, options = {}) {
-    this.#historyManager = new HistoryManager(options.model);
-    this.#stateManager = new StateManager(target, {
-      observe: options.observe,
-      accessor: options.accessor
+  constructor(element, options = {}) {
+    this.#element = element;
+
+    this.#setupPropertyHandlers(options);
+
+    // Create the core rewindable instance
+    this.#rewindable = new Rewindable(element, {
+      ...options,
+      // Property handlers to handle debouncing
+      propertyHandlers: this.#propertyHandlers,
+      // Function to record initial state
+      recordBaseline: () => {
+        // Record initial state after DOM is ready
+        if (document.readyState === 'loading') {
+          window.addEventListener('DOMContentLoaded', () => this.record(), {once: true});
+        } else {
+          this.record();
+        }
+      }
+    });
+
+    this.#setupKeyboardHandlers(options);
+  }
+
+  // Private setup methods
+
+  #setupPropertyHandlers(options) {
+    const {observe = [], debounce = {}} = options;
+
+    for (const prop of observe) {
+      if (prop in debounce) {
+        const delay = debounce[prop];
+        this.#propertyHandlers.set(
+          prop,
+          cel.debounce(() => this.record(), delay)
+        );
+      } else {
+        this.#propertyHandlers.set(prop, () => this.record());
+      }
+    }
+  }
+
+  #setupKeyboardHandlers(options) {
+    const {keys} = options;
+    if (!keys) return;
+
+    this.#eventHandler = new EventHandler(this.#element, keys);
+
+    this.#element.addEventListener('undo', (event) => {
+      this.undo();
+      event.preventDefault();
+    });
+
+    this.#element.addEventListener('redo', (event) => {
+      this.redo();
+      event.preventDefault();
     });
   }
 
-  /**
-   * @returns {Object} Current state
-   */
-  get state() {
-    return this.#stateManager.state;
+  #refocus() {
+    if (typeof this.#element.focus === 'function' &&
+      !this.#element.contains(document.activeElement)) {
+      this.#element.focus();
+    }
   }
 
-  /**
-   * @param {Object} newState - State to restore
-   */
-  set state(newState) {
-    this.#stateManager.state = newState;
-  }
+  // Public API methods that delegate to core Rewindable
 
-  get index() {
-    return this.#historyManager.index;
-  }
-
-  get history() {
-    return this.#historyManager.history;
-  }
-
-  set history(newHistory) {
-    this.#historyManager.history = newHistory;
-  }
-
-  /**
-   * Records current state in history
-   * @returns {Rewindable} this instance for chaining
-   */
   record() {
-    if (!this.#recording) return this;
-    this.#historyManager.record(this.#stateManager.state);
-    return this;
+    return this.#rewindable.record();
   }
 
-  /**
-   * Coalesces changes by suspending recording, running the callback,
-   * and recording once after the callback is completed
-   * @returns {Rewindable} this instance for chaining
-   */
   coalesce(fn) {
-    this.suspend();
-    fn();
-    this.resume().record();
-    return this;
+    return this.#rewindable.coalesce(fn);
   }
 
-  /**
-   * Travels to the given index
-   * @param {number} index - Index to travel to
-   * @returns {Rewindable} this instance for chaining
-   */
   travel(index) {
-    const newState = this.#historyManager.travel(index);
-    if (!newState) return this;
-
-    this.suspend();
-    this.#stateManager.state = newState;
-    this.resume();
-    return this;
+    return this.#rewindable.travel(index);
   }
 
-  /**
-   * Drops the state at the given index
-   * @param index
-   * @returns {Rewindable}
-   */
   drop(index) {
-    this.#historyManager.drop(index);
-    return this;
+    return this.#rewindable.drop(index);
   }
 
-  /**
-   * Undoes the last recorded state
-   * @returns {Rewindable} this instance for chaining
-   */
   undo() {
-    const previousState = this.#historyManager.previousState;
-    if (!previousState) return this;
-
-    this.suspend();
-    this.state = this.#historyManager.undo();
-    this.resume();
+    this.#rewindable.undo();
+    this.#refocus();
     return this;
   }
 
-  /**
-   * Redoes the last undone state
-   * @returns {Rewindable} this instance for chaining
-   */
   redo() {
-    const nextState = this.#historyManager.nextState;
-    if (!nextState) return this;
-
-    this.suspend();
-    this.state = this.#historyManager.redo();
-    this.resume();
+    this.#rewindable.redo();
+    this.#refocus();
     return this;
   }
 
-  /**
-   * Suspends recording.
-   * @return {Rewindable} this instance for chaining.
-   */
-  suspend() {
-    this.#recording = false;
-    return this;
-  }
+  // Cleanup
 
-  /**
-   * Resumes recording.
-   * @returns {Rewindable} this instance for chaining.
-   */
-  resume() {
-    this.#recording = true;
-    return this;
+  destroy() {
+    this.#eventHandler?.destroy();
   }
 }
 
@@ -371,185 +346,7 @@ class RewindableComposite {
  * @default ["Ctrl+Y", "Ctrl+Shift+Z", "Shift+Meta+Z"]
  */
 
-/**
- * @typedef {Object} RewindElementOptions
- * @property {UndoModel} [model='linear'] - Undo model
- * @property {string[]} [observe=[]] - Properties to observe
- * @property {Accessor} [accessor] - Custom state accessor
- * @property {Object<string, number>} [debounce={}] - Debounce times for properties
- * @property {UndoKeys} [keys] - Keyboard shortcuts configuration
- */
-class RewindableElement {
-  #rewindable;
-  #element;
-  #eventHandler;
-  #propertyHandlers = new Map();
 
-  /**
-   * @param {HTMLElement} element - DOM element to make rewindable
-   * @param {RewindElementOptions} options - Configuration options
-   */
-  constructor(element, options = {}) {
-    this.#element = element;
-
-    // Create the core rewindable instance
-    this.#rewindable = new Rewindable(element, {
-      ...options,
-      // Custom accessor to handle DOM-specific state
-      accessor: {
-        get: () => this.#getElementState(),
-        set: (state) => this.#setElementState(state)
-      }
-    });
-
-    this.#setupPropertyHandlers(options);
-    this.#setupKeyboardHandling(options);
-    this.#setupDOMObserver(options);
-
-    // Record initial state after DOM is ready
-    if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', () => this.record(), {once: true});
-    } else {
-      this.record();
-    }
-  }
-
-  // Private setup methods
-
-  #setupPropertyHandlers(options) {
-    const {observe = [], debounce = {}} = options;
-
-    for (const prop of observe) {
-      if (prop in debounce) {
-        this.#propertyHandlers.set(
-          prop,
-          cel.debounce(() => this.record(), debounce[prop])
-        );
-      } else {
-        this.#propertyHandlers.set(prop, () => this.record());
-      }
-    }
-  }
-
-  #setupKeyboardHandling(options) {
-    const {keys} = options;
-    if (!keys) return;
-
-    this.#eventHandler = new EventHandler(this.#element, keys);
-
-    this.#element.addEventListener('undo', (event) => {
-      this.undo();
-      event.preventDefault();
-    });
-
-    this.#element.addEventListener('redo', (event) => {
-      this.redo();
-      event.preventDefault();
-    });
-  }
-
-  #setupDOMObserver(options) {
-    const {observe = []} = options;
-
-    cel.intercept(this.#element, {
-      properties: new Set(observe),
-      set: (prop) => {
-        console.info(`Observed change for ${prop}...`);
-        this.#propertyHandlers.get(prop)?.();
-      }
-    });
-  }
-
-  // State management helpers
-
-  #getElementState() {
-    // Get observed properties
-    const state = {};
-    for (const prop of this.#propertyHandlers.keys()) {
-      state[prop] = this.#element[prop];
-    }
-
-    // Add any additional DOM-specific state
-    state.attributes = this.#getAttributes();
-    state.classList = Array.from(this.#element.classList);
-
-    return state;
-  }
-
-  #setElementState(state) {
-    // Restore observed properties
-    for (const prop of this.#propertyHandlers.keys()) {
-      if (prop in state) {
-        this.#element[prop] = state[prop];
-      }
-    }
-
-    // Restore additional DOM state
-    this.#setAttributes(state.attributes);
-    this.#element.className = state.classList.join(' ');
-  }
-
-  #getAttributes() {
-    return Array.from(this.#element.attributes)
-      .reduce((acc, attr) => {
-        acc[attr.name] = attr.value;
-        return acc;
-      }, {});
-  }
-
-  #setAttributes(attributes = {}) {
-    // Remove existing attributes
-    Array.from(this.#element.attributes)
-      .forEach(attr => this.#element.removeAttribute(attr.name));
-
-    // Set new attributes
-    Object.entries(attributes)
-      .forEach(([name, value]) => this.#element.setAttribute(name, value));
-  }
-
-  #refocus() {
-    if (typeof this.#element.focus === 'function' &&
-      !this.#element.contains(document.activeElement)) {
-      this.#element.focus();
-    }
-  }
-
-  // Public API methods that delegate to core Rewindable
-
-  record() {
-    return this.#rewindable.record();
-  }
-
-  coalesce(fn) {
-    return this.#rewindable.coalesce(fn);
-  }
-
-  travel(index) {
-    return this.#rewindable.travel(index);
-  }
-
-  drop(index) {
-    return this.#rewindable.drop(index);
-  }
-
-  undo() {
-    this.#rewindable.undo();
-    this.#refocus();
-    return this;
-  }
-
-  redo() {
-    this.#rewindable.redo();
-    this.#refocus();
-    return this;
-  }
-
-  // Cleanup
-
-  destroy() {
-    this.#eventHandler?.destroy();
-  }
-}
 
 class RewindableCompositeElement {
   #element;
@@ -610,4 +407,4 @@ export function rewind(target, options = {}) {
 }
 
 // Export individual classes for advanced use cases
-export {Rewindable, RewindableElement};
+export {RewindableElement};
