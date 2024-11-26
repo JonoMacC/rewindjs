@@ -10,11 +10,6 @@ export const UndoModel = {
 };
 
 /**
- * @typedef {"linear" | "history"} UndoModel
- * @default "linear"
- */
-
-/**
  * HistoryManager
  *
  * Manages the undo/redo functionality for a component.
