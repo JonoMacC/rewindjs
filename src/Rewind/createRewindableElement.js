@@ -83,7 +83,8 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @param {RewindConfig} config - Configuration for the Rewindable instance.
      * @param {...any} args - Arguments for the TargetClass constructor.
      */
-    constructor(config = {}, ...args) {
+    constructor(...args) {
+      const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
       // Initialize the base TargetClass
       super(...args);
 
