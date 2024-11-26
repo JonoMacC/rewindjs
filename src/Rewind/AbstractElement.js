@@ -11,6 +11,14 @@ export class AbstractElement {
     throw new Error("Method not implemented");
   }
 
+  contains(element) {
+    throw new Error("Method not implemented");
+  }
+
+  focus() {
+    throw new Error("Method not implemented");
+  }
+
   remove(child) {
     throw new Error("Method not implemented");
   }

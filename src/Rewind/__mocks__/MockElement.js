@@ -40,6 +40,14 @@ export class MockElement extends AbstractElement {
     newChild.#parent = this;
   }
 
+  contains(element) {
+    return this === element || this.#children.includes(element);
+  }
+
+  focus() {
+    console.log(`Element focused: ${this}`);
+  }
+
   find(selector) {
     // Implement a simple selector matching logic
     if (selector.startsWith("#")) {
