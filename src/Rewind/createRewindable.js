@@ -23,6 +23,7 @@ import cel from "../lib/celerity/cel.js";
  * @property {Map} [propertyHandlers=Map()] - Functions to execute on a property change
  * @property {Accessor} [accessor] - Custom state accessor for manual recording
  * @property {Function} [recordBaseline] - Custom function for recording initial state
+ * @property {Object} [host] - Target to intercept for auto-recording
  */
 
 /**
@@ -50,7 +51,7 @@ import cel from "../lib/celerity/cel.js";
  *  set count(value) { this.#count = value; }
  * }
  *
- * const RewindableCounter = rewind(Counter, {
+ * const RewindableCounter = createRewindable(Counter, {
  *  observe: ['count']
  * });
  *
@@ -78,7 +79,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       const options = this.constructor.rewindOptions;
 
       this.#historyManager = new HistoryManager(options.model);
-      this.#stateManager = new StateManager(this, {
+      this.#stateManager = new StateManager(options.host || this, {
         observe: options.observe,
         accessor: options.accessor
       });
@@ -90,25 +91,15 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         this.travel(index);
       }
 
-      // Set up auto-recording
-      cel.intercept(this,{
-        properties: new Set(options.observe || []),
-        methods: new Set(options.coalesce || []),
-        set: (prop) => {
-          if (this.#recording) {
-            console.info(`Observed change for ${prop}...`);
-            options.propertyHandlers?.get(prop)?.() || this.record();
-          }
-        },
-        wrap: (method) => {
-          this.coalesce(method);
-        },
-      });
-
       // Handle initial state recording after connection
-      if (this.history.length === 0) {
+      if (!config.history && this.history.length === 0) {
         const recordBaseline = options.recordBaseline || this.record.bind(this);
-        recordBaseline();
+        recordBaseline.call(this);
+      }
+
+      // Set up auto-recording if host is not provided
+      if (!options.host) {
+        this.intercept({...options, host: this});
       }
     }
 
@@ -136,6 +127,35 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
     set history(newHistory) {
       this.#historyManager.history = newHistory;
+    }
+
+    /**
+     * Sets up auto-recording
+     */
+    intercept(options) {
+      cel.intercept(options.host,{
+        properties: new Set(options.observe || []),
+        methods: new Set(options.coalesce || []),
+        set: (prop) => {
+          if (this.#recording) {
+            console.info(`Observed change for ${prop}...`);
+            const handler = options.propertyHandlers?.get(prop);
+            if (handler) {
+              handler();
+            } else {
+              this.record();
+            }
+          }
+        },
+        wrap: (method) => {
+          this.coalesce(method);
+        },
+      });
+
+      // Reassign intercept to a no-op after running once
+      this.intercept = () => {
+        console.warn('Intercept has already been set up. Skipping.');
+      };
     }
 
     /**
