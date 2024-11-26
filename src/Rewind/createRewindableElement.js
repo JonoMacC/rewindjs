@@ -105,7 +105,15 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         },
         host: this
       });
-      this.#rewindable = new RewindableClass(config, ...args);
+
+      customElements.define(`rw-${TargetClass.name}${cel.randomId()}-core`, RewindableClass);
+
+      try {
+        this.#rewindable = new RewindableClass(config, ...args.slice(1));
+      } catch (error) {
+        console.error('Failed to create Rewindable instance:', error);
+        throw error;
+      }
 
       // Defer intercept to ensure the RewindableElement is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
