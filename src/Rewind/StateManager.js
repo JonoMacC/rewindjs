@@ -1,3 +1,6 @@
+// Type definitions
+import './types.js';
+
 export class StateManager {
   #target;
   #observe;

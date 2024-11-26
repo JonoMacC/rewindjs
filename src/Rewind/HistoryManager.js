@@ -1,6 +1,9 @@
 // Utilities
 import cel from "../lib/celerity/cel.js";
 
+// Type definitions
+import './types.js';
+
 export const UndoModel = {
   LINEAR: "linear",
   HISTORY: "history",

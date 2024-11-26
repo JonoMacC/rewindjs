@@ -4,28 +4,8 @@ import {EventHandler} from "./EventHandler.js";
 // Utilities
 import cel from "../lib/celerity/cel.js";
 
-/**
- * @typedef {("linear" | "history")} UndoModel
- * @default "linear"
- */
-
-/**
- * @typedef {Object} Accessor
- * @property {Function} get - A function to get the state of the target.
- * @property {Function} set - A function to set the state of the target.
- */
-
-/**
- * @typedef {Object} RewindElementOptions
- * @property {UndoModel} [model='linear'] - Undo model
- * @property {string[]} [observe=[]] - Properties to observe with auto-recording
- * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
- * @property {Accessor} [accessor] - Custom state accessor for manual recording
- * @property {Object[]} [history=[]] - Initial history
- * @property {number} [index=undefined] - Initial index
- * @property {Object<string, number>} [debounce={}] - Debounce times for properties
- * @property {UndoKeys} [keys] - Keyboard shortcuts configuration
- */
+// Type definitions
+import './types.js';
 
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are

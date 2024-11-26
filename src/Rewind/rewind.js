@@ -5,24 +5,8 @@ import {EventHandler} from "./EventHandler.js";
 // Utilities
 import cel from "../lib/celerity/cel.js";
 
-/**
- * @typedef {Object} UndoKeys
- * @property {string[]} undo - The undo keys.
- * @default ["Ctrl+Z", "Meta+Z"]
- * @property {string[]} redo - The redo keys.
- * @default ["Ctrl+Y", "Ctrl+Shift+Z", "Shift+Meta+Z"]
- */
-
-/**
- * @typedef {("linear" | "history")} UndoModel
- * @default "linear"
- */
-
-/**
- * @typedef {Object} Accessor
- * @property {Function} get - A function to get the state of the target.
- * @property {Function} set - A function to set the state of the target.
- */
+// Type definitions
+import './types.js';
 
 /**
  * Creates a class that adds undo/redo functionality to a target class. Properties in the `observe` option
