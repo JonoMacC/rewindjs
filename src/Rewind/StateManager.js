@@ -1,13 +1,10 @@
+// Type definitions
+import './types.js';
+
 export class StateManager {
   #target;
   #observe;
   #accessor;
-
-  /**
-   * @typedef {Object} Accessor
-   * @property {Function} get - A function to get the state of the target.
-   * @property {Function} set - A function to set the state of the target.
-   */
 
   /**
    * A utility class for managing the state of a target object. Use options.observe to specify the properties
