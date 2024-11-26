@@ -75,9 +75,6 @@ describe("createRewindableElement", () => {
 
     // Instantiate the component
     component = new RewindableElement();
-
-    // Append the component to the document body for testing
-    document.body.appendChild(component);
   });
 
   it("should record initial state", () => {
@@ -174,8 +171,6 @@ describe("createRewindableElement", () => {
       history,
       index
     });
-
-    document.appendChild(component);
 
     expect(component.history).toEqual(history);
     expect(component.content).toBe("Second");
