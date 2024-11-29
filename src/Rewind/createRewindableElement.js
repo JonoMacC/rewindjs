@@ -64,13 +64,12 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @param {...any} args - Arguments for the TargetClass constructor.
      */
     constructor(...args) {
+      super(...args);
+
       /**
        * @type {RewindConfig|{}}
        */
       const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
-
-      // Initialize the base TargetClass
-      super(...args);
 
       const options = this.constructor.rewindOptions;
 
@@ -80,18 +79,25 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       const RewindableClass = createRewindable(TargetClass, {
         ...options,
         propertyHandlers: this.#propertyHandlers,
-        recordBaseline: function() {
-          // Record initial state after DOM is ready
-          if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', () => this.record(), {once: true});
-          } else {
-            this.record();
-          }
-        },
         host: this
       });
 
+      RewindableClass.prototype.recordBaseline = function() {
+        // Record initial state after DOM is ready
+        if (document.readyState === 'loading') {
+          window.addEventListener('DOMContentLoaded', () => this.record(), {once: true});
+        } else {
+          this.record();
+        }
+
+        // Reassign method so that it can only be called once
+        this.recordBaseline = () => {};
+      }
+
       this.#rewindable = new RewindableClass(config, ...args.slice(1));
+
+      // // Setup property forwarding
+      // cel.forward(this, this.#rewindable);
 
       // Defer intercept to ensure the RewindableElement is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});

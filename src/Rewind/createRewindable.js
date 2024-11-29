@@ -72,8 +72,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
       // Handle initial state recording after connection
       if (!config.history && this.history.length === 0) {
-        const recordBaseline = options.recordBaseline || this.record.bind(this);
-        recordBaseline.call(this);
+        this.recordBaseline();
       }
 
       // Set up auto-recording if host is not provided
@@ -135,6 +134,16 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.intercept = () => {
         console.warn('Intercept has already been set up. Skipping.');
       };
+    }
+
+    /**
+     * Records the current state once (initial recording)
+     */
+    recordBaseline() {
+      this.record();
+
+      // Reassign method so that it can only be called once
+      this.recordBaseline = () => {};
     }
 
     /**

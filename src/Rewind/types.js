@@ -36,7 +36,6 @@
  * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
  * @property {Map} [propertyHandlers=Map()] - Functions to execute on a property change
  * @property {Accessor} [accessor] - Custom state accessor for manual recording
- * @property {Function} [recordBaseline] - Custom function for recording initial state
  * @property {Object} [host] - Target to intercept for auto-recording
  */
 
