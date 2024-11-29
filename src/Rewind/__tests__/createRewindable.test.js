@@ -50,11 +50,8 @@ describe("createRewindable", () => {
 
   it("should record initial state", () => {
     expect(component.history.length).toBe(1);
-    expect(Object.keys(component.history[0])).toEqual([
-      "top",
-      "left",
-      "content",
-    ]);
+    const initialState = { left: 0, top: 0, content: "" };
+    expect(component.history[0]).toStrictEqual(initialState);
   });
 
   it("should record changes to observed properties", () => {
