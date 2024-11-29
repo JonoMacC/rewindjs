@@ -52,6 +52,7 @@ import './types.js';
  *
  */
 export function createRewindableElement(TargetClass, rewindOptions = {}) {
+  // TODO: Remove inheritance of TargetClass and use composition if possible
   return class RewindableElement extends TargetClass {
     static rewindOptions = rewindOptions;
 
@@ -60,11 +61,14 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     #propertyHandlers = new Map();
 
     /**
-     * @param {RewindConfig} config - Configuration for the Rewindable instance.
      * @param {...any} args - Arguments for the TargetClass constructor.
      */
     constructor(...args) {
+      /**
+       * @type {RewindConfig|{}}
+       */
       const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
+
       // Initialize the base TargetClass
       super(...args);
 
@@ -87,14 +91,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         host: this
       });
 
-      customElements.define(`rw-${TargetClass.name}${cel.randomId()}-core`, RewindableClass);
-
-      try {
-        this.#rewindable = new RewindableClass(config, ...args.slice(1));
-      } catch (error) {
-        console.error('Failed to create Rewindable instance:', error);
-        throw error;
-      }
+      this.#rewindable = new RewindableClass(config, ...args.slice(1));
 
       // Defer intercept to ensure the RewindableElement is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
@@ -175,12 +172,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     record() {
-      if (!this.#rewindable) {
-        throw new Error('Rewindable instance is undefined');
-      }
-      if (typeof this.#rewindable.record !== 'function') {
-        throw new Error('Record is not a function on Rewindable');
-      }
       this.#rewindable.record();
       return this;
     }

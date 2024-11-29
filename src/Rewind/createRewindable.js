@@ -35,29 +35,33 @@ import './types.js';
  * counter.redo();  // Returns to 5
  */
 export function createRewindable(TargetClass, rewindOptions = {}) {
-  return class Rewindable extends TargetClass {
+  return class Rewindable {
     static rewindOptions = rewindOptions;
 
+    #target;
     #historyManager;
     #stateManager;
     #recording = true;
 
     /**
-     * @param {RewindConfig} config - Configuration for the Rewindable instance.
      * @param {...any} args - Arguments for the TargetClass constructor.
      */
     constructor(...args) {
+      /**
+       * @type {RewindConfig|{}}
+       */
       const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
-      // Initialize the base TargetClass
-      super(...args);
-
       const options = this.constructor.rewindOptions;
 
+      this.#target = new TargetClass(...args.slice(1));
       this.#historyManager = new HistoryManager(options.model);
       this.#stateManager = new StateManager(options.host || this, {
         observe: options.observe,
         accessor: options.accessor
       });
+
+      // Setup property forwarding
+      cel.forward(this, this.#target);
 
       // Handle initial history and index (instance-specific config)
       if (config.history) {
