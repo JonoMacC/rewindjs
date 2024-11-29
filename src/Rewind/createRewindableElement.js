@@ -13,7 +13,7 @@ import './types.js';
  * called. Use `debounce` to add debounce to auto-recorded properties. Use `accessor` to provide a custom accessor
  * for manual recording.
  *
- * @param {typeof Object} TargetClass - The class to extend.
+ * @param {typeof HTMLElement} TargetClass - The class to extend.
  * @param {RewindElementOptions} rewindOptions - Options for the Rewindable class.
  * @returns {typeof TargetClass} A new class that extends TargetClass with undo/redo functionality.
  *
@@ -52,7 +52,6 @@ import './types.js';
  *
  */
 export function createRewindableElement(TargetClass, rewindOptions = {}) {
-  // TODO: Remove inheritance of TargetClass and use composition if possible
   return class RewindableElement extends TargetClass {
     static rewindOptions = rewindOptions;
 
@@ -95,9 +94,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       }
 
       this.#rewindable = new RewindableClass(config, ...args.slice(1));
-
-      // // Setup property forwarding
-      // cel.forward(this, this.#rewindable);
 
       // Defer intercept to ensure the RewindableElement is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
@@ -144,6 +140,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     // Public API methods that delegate to core Rewindable
+
     /**
      * @returns {Object} Current state
      */
@@ -173,6 +170,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     connectedCallback() {
       super.connectedCallback?.();
       const options = this.constructor.rewindOptions;
+
       // Setup keyboard shortcuts for undo and redo
       this.#setupKeyboardHandlers(options);
     }
