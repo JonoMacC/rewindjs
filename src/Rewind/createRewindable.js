@@ -55,7 +55,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
       this.#target = new TargetClass(...args.slice(1));
       this.#historyManager = new HistoryManager(options.model);
-      this.#stateManager = new StateManager(options.host || this, {
+      this.#stateManager = new StateManager(options.host || this.#target, {
         observe: options.observe,
         accessor: options.accessor
       });
