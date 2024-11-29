@@ -100,8 +100,12 @@ function rewindFromClass(BaseClass, options = {}) {
  * rwTextInput.redo(); // Returns to 'Hello'
  */
 function rewindFromInstance(template, options = {}) {
-  // Create a class to wrap the template
-  const BaseClass = cel.proxyElement(template, options.observe)
+  // TODO: Remove need for custom element registration by changing proxyElement if possible
+  // Create a custom element class to wrap the template
+  const BaseClass = cel.proxyElement(template, options.observe);
+
+  // Register the custom element
+  customElements.define(`rw-${cel.randomId()}`, BaseClass);
   return rewindFromClass(BaseClass, options);
 }
 

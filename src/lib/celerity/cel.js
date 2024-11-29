@@ -68,6 +68,9 @@ const cel = {
           this.#syncAttribute(attr.name, attr.value);
         });
 
+        // // Forward property and method calls
+        // cel.forward(this, this.#element);
+
         this.#observeProperties(observe);
       }
 
@@ -767,6 +770,57 @@ const cel = {
     this.interceptProperties(target, properties, set);
     this.interceptMethods(target, methods, wrap);
   },
+
+  /**
+   * Forwards property and method calls on a host object to a target object.
+   *
+   * @param {Object} host - The host object that will delegate property calls.
+   * @param {Object} target - The target (hosted) object that will handle the property calls.
+   */
+  forward(host, target) {
+    // Traverse the entire prototype chain
+    let currentPrototype = Object.getPrototypeOf(target);
+
+    while (currentPrototype && currentPrototype !== Object.prototype) {
+      const prototypeProperties = Object.getOwnPropertyDescriptors(currentPrototype);
+
+      for (const [propName, descriptor] of Object.entries(prototypeProperties)) {
+        // Skip constructor, already defined methods, and private methods
+        if (propName === 'constructor' ||
+          propName in host ||
+          propName.startsWith('#')) continue;
+
+        // Handle getter/setter pairs
+        if (descriptor.get || descriptor.set) {
+          Object.defineProperty(host, propName, {
+            get: descriptor.get ? () => descriptor.get.call(target) : undefined,
+            set: descriptor.set ? (value) => descriptor.set.call(target, value) : undefined,
+            enumerable: descriptor.enumerable,
+            configurable: descriptor.configurable
+          });
+        }
+        // Handle methods explicitly
+        else if (typeof descriptor.value === 'function') {
+          host[propName] = (...args) => {
+            // Call the method on the target, preserving its original context
+            return descriptor.value.call(target, ...args);
+          };
+        }
+        // Handle regular properties
+        else if (descriptor.value !== undefined) {
+          Object.defineProperty(host, propName, {
+            get: () => target[propName],
+            set: (value) => { target[propName] = value; },
+            enumerable: descriptor.enumerable,
+            configurable: descriptor.configurable
+          });
+        }
+      }
+
+      // Move up the prototype chain
+      currentPrototype = Object.getPrototypeOf(currentPrototype);
+    }
+  }
 };
 
 export default cel;
