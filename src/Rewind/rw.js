@@ -105,7 +105,7 @@ function rewindFromInstance(template, options = {}) {
   const BaseClass = cel.proxyElement(template, options.observe);
 
   // Register the custom element
-  customElements.define(`rw-${cel.randomId()}`, BaseClass);
+  customElements.define(`html-input-${cel.randomId()}`, BaseClass);
   return rewindFromClass(BaseClass, options);
 }
 

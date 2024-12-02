@@ -112,24 +112,8 @@ const cel = {
         }
       }
 
-      #findDescriptor(prop) {
-        // First try to get descriptor from the instance itself
-        let descriptor = Object.getOwnPropertyDescriptor(this.#element, prop);
-        if (descriptor) return descriptor;
-
-        // Walk up the prototype chain
-        let currentProto = Object.getPrototypeOf(this.#element);
-        while (currentProto) {
-          descriptor = Object.getOwnPropertyDescriptor(currentProto, prop);
-          if (descriptor) return descriptor;
-          currentProto = Object.getPrototypeOf(currentProto);
-        }
-
-        return null;
-      }
-
       #observeProperty(prop) {
-        const descriptor = this.#findDescriptor(prop);
+        const descriptor = cel.findDescriptor(this.#element, prop);
 
         // Set up setter observation if available
         if (descriptor && (descriptor.set || descriptor.get)) {
@@ -693,6 +677,149 @@ const cel = {
   },
 
   /**
+   * Finds a property descriptor in the prototype chain of an object
+   * @param {Object} target - The object to search
+   * @param {string} prop - The property to find
+   * @returns {null|PropertyDescriptor} The descriptor, or null if not found
+   */
+  findDescriptor(target, prop) {
+    // First try to get descriptor from the instance itself
+    let descriptor = Object.getOwnPropertyDescriptor(target, prop);
+    if (descriptor) return descriptor;
+
+    // Walk up the prototype chain
+    let prototype = Object.getPrototypeOf(target);
+    while (prototype) {
+      descriptor = Object.getOwnPropertyDescriptor(prototype, prop);
+      if (descriptor) return descriptor;
+      prototype = Object.getPrototypeOf(prototype);
+    }
+
+    return null;
+  },
+
+  /**
+   * Observes a property on a target HTMLElement and calls a callback when it changes.
+   *
+   * @param {HTMLElement} target - The target object
+   * @param {string} prop - The property to observe
+   * @param {function} callback - The callback to call when the property changes
+   * @returns {function} A cleanup function to remove all observers and listeners
+   *
+   * @example
+   * const obj = document.querySelector('.rect');
+   * const cleanup = observeProperty(obj, 'clientWidth', () => {
+   *   console.log('width changed');
+   * });
+   *
+   * // Call cleanup function to remove all observers
+   * cleanup();
+   */
+  observeProperty(target, prop, callback) {
+    const eventListeners = new Set();
+    const observers = new Set();
+    let pollingInterval = null;
+
+    const strategyMap = {
+      value: () => observeWithEvents(['input', 'change']),
+      checked: () => observeWithEvents(['change']),
+      indeterminate: () => observeWithEvents(['change']),
+      scrollLeft: () => observeWithEvents(['scroll']),
+      scrollTop: () => observeWithEvents(['scroll']),
+      clientHeight: () => observeWithResize(),
+      clientWidth: () => observeWithResize(),
+      childElementCount: () => observeWithMutation(),
+      currentTime: () => observeWithEvents(['timeupdate', 'seeked']),
+      selectionStart: () => observeWithEvents(['select', 'keyup', 'mouseup']),
+      isVisible: () => observeWithIntersection(),
+    };
+
+    const descriptor = cel.findDescriptor(target, prop);
+    const strategy = strategyMap[prop];
+
+    if (strategy) {
+      strategy();
+    } else if (descriptor)  {
+      observeWithSetter(descriptor);
+    } else {
+      observeWithPolling(prop);
+    }
+
+    function observeWithSetter(descriptor) {
+      const originalSet = descriptor.set;
+      Object.defineProperty(target, prop, {
+        get: descriptor.get,
+        set: (value) => {
+          if (originalSet) {
+            originalSet.call(target, value);
+          }
+          callback.call(target);
+        },
+        enumerable: descriptor.enumerable,
+        configurable: descriptor.configurable
+      });
+    }
+
+    function observeWithEvents(events) {
+      const wrappedCallback = () => callback.call(target);
+
+      events.forEach(event => {
+        target.addEventListener(event, wrappedCallback);
+        eventListeners.add({ event, callback: wrappedCallback });
+      });
+    }
+
+    function observeWithResize() {
+      const observer = new ResizeObserver(() => callback.call(target));
+      observer.observe(target);
+      observers.add(observer);
+    }
+
+    function observeWithMutation() {
+      const observer = new MutationObserver(() => callback.call(target));
+      observer.observe(target, { childList: true, subtree: false });
+      observers.add(observer);
+    }
+
+    function observeWithIntersection() {
+      const observer = new IntersectionObserver(() => callback.call(target));
+      observer.observe(target);
+      observers.add(observer);
+    }
+
+    function observeWithPolling() {
+      pollingInterval = setInterval(() => callback.call(target), 100);
+    }
+
+    // Cleanup function
+    return () => {
+      // Remove event listeners
+      eventListeners.forEach(({ event, callback }) => {
+        target.removeEventListener(event, callback);
+      });
+      eventListeners.clear();
+
+      // Disconnect observers
+      observers.forEach(observer => {
+        observer.disconnect();
+      });
+      observers.clear();
+
+      // Clear polling interval
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+      }
+
+      // Reset setter if it was modified
+      const originalDescriptor = Object.getOwnPropertyDescriptor(target, prop);
+      if (originalDescriptor) {
+        Object.defineProperty(target, prop, originalDescriptor);
+      }
+    };
+  },
+
+  /**
    * Wraps the properties of an object with a callback that is called after the property is updated.
    * @param {Object} target - The object to wrap the properties of.
    * @param {Set<string>} properties - The properties to wrap.
@@ -700,16 +827,7 @@ const cel = {
    */
   interceptProperties(target, properties, set) {
     for (const prop of properties) {
-      let descriptor = Object.getOwnPropertyDescriptor(target, prop);
-
-      // Check the prototype chain for the property
-      if (!descriptor) {
-        let proto = Object.getPrototypeOf(target);
-        while (proto && !descriptor) {
-          descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-          proto = Object.getPrototypeOf(proto);
-        }
-      }
+      const descriptor = cel.findDescriptor(target, prop);
 
       // Define the property on the object
       // The setter will call the callback after updating the property
