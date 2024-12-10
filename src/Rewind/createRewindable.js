@@ -8,6 +8,8 @@ import cel from "../lib/celerity/cel.js";
 // Type definitions
 import './__types__/types.js';
 
+// TODO: Handle composite rewindable while removing the `isComposite` flag (all rewindables should be composite)
+
 /**
  * Creates a class that adds undo/redo functionality to a target class. Properties in the `observe` option
  * are automatically recorded when they are changed. For changing multiple properties at once that should be recorded
