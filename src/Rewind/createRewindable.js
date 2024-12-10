@@ -1,5 +1,6 @@
 import {HistoryManager} from "./HistoryManager";
 import {StateManager} from "./StateManager";
+import {CompositeStateManager} from "./CompositeStateManager";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";
@@ -13,9 +14,9 @@ import './types.js';
  * as a single change rather than multiple separate changes, use the `coalesce` option, passing in the method name
  * where the changes occur.
  *
- * @param {typeof Object} TargetClass - The class to extend.
- * @param {RewindOptions} rewindOptions - Options for the Rewindable class.
- * @returns {typeof TargetClass} A new class that extends TargetClass with undo/redo functionality.
+ * @param {typeof Object} TargetClass - The target class
+ * @param {RewindOptions} rewindOptions - Options for the Rewindable class
+ * @returns {typeof TargetClass} A new class that extends TargetClass with undo/redo functionality
  *
  * @example
  * class Counter {
@@ -36,12 +37,14 @@ import './types.js';
  */
 export function createRewindable(TargetClass, rewindOptions = {}) {
   return class Rewindable {
+    static targetClass = TargetClass;
     static rewindOptions = rewindOptions;
 
     #target;
     #historyManager;
     #stateManager;
     #recording = true;
+    #baselineRecorded = false;
 
     /**
      * @param {...any} args - Arguments for the TargetClass constructor.
@@ -53,12 +56,15 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
       const options = this.constructor.rewindOptions;
 
-      this.#target = new TargetClass(...args.slice(1));
+      this.#target = new this.constructor.targetClass(...args.slice(1));
+
       this.#historyManager = new HistoryManager(options.model);
-      this.#stateManager = new StateManager(options.host || this.#target, {
-        observe: options.observe,
-        accessor: options.accessor
-      });
+      this.#stateManager = options.isComposite
+        ? new CompositeStateManager(this.#target, {
+          observe: options.observe,
+          children: config.children || new Map()
+        })
+        : new StateManager(options.host || this.#target, options.observe);
 
       // Setup property forwarding
       cel.forward(this, this.#target);
@@ -70,10 +76,11 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         this.travel(index);
       }
 
-      // Handle initial state recording after connection
-      if (!config.history && this.history.length === 0) {
-        this.recordBaseline();
+      // Handle initial state recording
+      if (config.history && this.history.length !== 0) {
+        this.#baselineRecorded = true;
       }
+      this.recordBaseline();
 
       // Set up auto-recording if host is not provided
       if (!options.host) {
@@ -92,7 +99,34 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @param {Object} newState - State to restore
      */
     set state(newState) {
+      if (this.#stateManager instanceof CompositeStateManager) {
+        const children = new Map();
+
+        if (newState.children) {
+          for (const [id, state] of newState.children) {
+            // Restore children that are not in the current state
+            if (this.state.children.has(id)) continue;
+            const lastHistory = this.#lastChildHistory(id);
+            if (lastHistory) {
+              state.history = cel.mergeHistories(
+                state.history,
+                lastHistory
+              );
+            }
+            children.set(id, state);
+          }
+        }
+        this.#stateManager.state = {...newState, children};
+        return;
+      }
       this.#stateManager.state = newState;
+    }
+
+    get children() {
+      if (!(this.#stateManager instanceof CompositeStateManager)) {
+      //  throw new Error('children are only available for composite state managers');
+      }
+      return this.#stateManager.children;
     }
 
     get index() {
@@ -105,6 +139,16 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
     set history(newHistory) {
       this.#historyManager.history = newHistory;
+    }
+
+    /**
+     * Returns the last (most recent) history for a child found in the parent undo/redo history
+     * @param id - The child identifier
+     * @returns {Object[]|null} The history for the child or null
+     */
+    #lastChildHistory(id) {
+      const lastHistory = this.history.findLast(history => history.children.has(id));
+      return lastHistory ? lastHistory.children.get(id).history : null;
     }
 
     /**
@@ -137,13 +181,51 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     }
 
     /**
+     * Adds a child (only available for composite state managers)
+     * @param {string} id - Unique identifier for the child
+     * @param {Object} child - Child to add
+     * @returns {Rewindable} this instance for chaining
+     */
+    addChild(id, child) {
+      if (!(this.#stateManager instanceof CompositeStateManager)) {
+        throw new Error('addChild is only available for composite state managers');
+      }
+      this.#stateManager.addChild(id, child);
+      this.record();
+      return this;
+    }
+
+    /**
+     * Removes a child (only available for composite state managers)
+     * @param {string} id - Child identifier to remove
+     * @returns {Rewindable} this instance for chaining
+     */
+    removeChild(id) {
+      if (!(this.#stateManager instanceof CompositeStateManager)) {
+        throw new Error('removeChild is only available for composite state managers');
+      }
+      // Record the current state
+      // This will capture the state of the child before it is removed
+      // If the child state was already recorded, this will be a no-op
+      this.record();
+
+      // Remove the child
+      this.#stateManager.removeChild(id);
+
+      // Record the new state now that the child has been removed
+      this.record();
+      return this;
+    }
+
+    /**
      * Records the current state once (initial recording)
      */
     recordBaseline() {
-      this.record();
+      if (this.#baselineRecorded) return;
 
-      // Reassign method so that it can only be called once
-      this.recordBaseline = () => {};
+      console.log('Recording baseline with state:', this.state);
+      this.record();
+      this.#baselineRecorded = true;
     }
 
     /**
@@ -153,7 +235,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     record() {
       if (!this.#recording) return this;
       console.info(`Recording snapshot...`);
-      this.#historyManager.record(this.#stateManager.state);
+      this.#historyManager.record(this.state);
       return this;
     }
 
