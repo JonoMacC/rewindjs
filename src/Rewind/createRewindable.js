@@ -62,7 +62,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
       this.#historyManager = new HistoryManager(options.model);
       this.#stateManager = options.isComposite
-        ? new CompositeStateManager(this.#target, {
+        ? new CompositeStateManager(options.host || this.#target, {
           observe: options.observe,
           children: config.children || new Map()
         })
