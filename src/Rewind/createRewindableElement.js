@@ -8,6 +8,7 @@ import cel from "../lib/celerity/cel.js";
 import './__types__/types.js';
 
 // TODO: Add functionality for composite rewindables
+// TODO: Remove custom accessor for manual recording
 
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are
