@@ -300,6 +300,21 @@ const cel = {
   },
 
   /**
+   * Generates a hash code
+   *
+   * @param {string} str - The string to hash
+   * @returns {number} - The hash code
+   */
+  hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  },
+
+  /**
    *
    * Generates an alphabetic label from an index in the format a-z, aa-zz, etc.
    * Can be used for column headers in tables
