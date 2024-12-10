@@ -69,7 +69,7 @@ describe("createRewindable", () => {
 
     it("should record initial state", () => {
       expect(component.history.length).toBe(1);
-      const initialState = { left: 0, top: 0, content: "" };
+      const initialState = { left: 0, top: 0, content: "", children: new Map() };
       expect(component.history[0]).toStrictEqual(initialState);
     });
 
@@ -91,7 +91,7 @@ describe("createRewindable", () => {
     it("should coalesce method calls", () => {
       component.setPosition(10, 20);
       expect(component.history.length).toBe(2);
-      expect(component.history[1]).toStrictEqual({ top: 10, left: 20, content: "" });
+      expect(component.history[1]).toStrictEqual({ top: 10, left: 20, content: "", children: new Map() });
     });
 
     it("should suspend and resume recording", () => {
@@ -101,8 +101,8 @@ describe("createRewindable", () => {
       component.resume();
       component.top = 200;
       expect(component.history.length).toBe(2);
-      expect(component.history[0]).toStrictEqual({ top: 0, left: 0, content: "" });
-      expect(component.history[1]).toStrictEqual({ top: 200, left: 0, content: "" });
+      expect(component.history[0]).toStrictEqual({ top: 0, left: 0, content: "", children: new Map() });
+      expect(component.history[1]).toStrictEqual({ top: 200, left: 0, content: "", children: new Map() });
     });
 
     it("should travel to a specific index", () => {
@@ -206,7 +206,6 @@ describe("createRewindable", () => {
         RewindableComposite = createRewindable(BaseClass, {
           observe: ["top", "left", "content"],
           coalesce: ["setPosition"],
-          isComposite: true,
         });
         component = new RewindableComposite();
       });
@@ -356,7 +355,6 @@ describe("createRewindable", () => {
         RewindableComposite = createRewindable(BaseClass, {
           observe: ["top", "left", "content"],
           coalesce: ["setPosition"],
-          isComposite: true,
         });
 
         composite = new RewindableComposite();
@@ -427,7 +425,6 @@ describe("createRewindable", () => {
 
         RewindableComposite = createRewindable(AltClass, {
           observe: ['value'],
-          isComposite: true
         });
 
         composite = new RewindableComposite();
