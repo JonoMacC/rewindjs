@@ -35,13 +35,12 @@
  * @property {string[]} [observe=[]] - Properties to observe with auto-recording
  * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
  * @property {Map} [propertyHandlers=Map()] - Functions to execute on a property change
- * @property {boolean} [isComposite=false] - Whether the target is a composite rewindable
  * @property {Object} [host] - Target to intercept for auto-recording
  */
 
 /**
  * @typedef {Object} RewindConfig
  * @property {Object[]} [history=[]] - Initial history
- * @property {Map<string, Rewindable>} [children=new Map()] - Initial rewindable children for a composite rewindable
+ * @property {Map<string, Rewindable>} [children=new Map()] - Initial rewindable children
  * @property {number} [index=undefined] - Initial index
  */

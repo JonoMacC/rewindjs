@@ -1,5 +1,4 @@
 import {HistoryManager} from "./HistoryManager";
-import {StateManager} from "./StateManager";
 import {CompositeStateManager} from "./CompositeStateManager";
 
 // Utilities
@@ -7,8 +6,6 @@ import cel from "../lib/celerity/cel.js";
 
 // Type definitions
 import './__types__/types.js';
-
-// TODO: Handle composite rewindable while removing the `isComposite` flag (all rewindables should be composite)
 
 /**
  * Creates a class that adds undo/redo functionality to a target class. Properties in the `observe` option
@@ -61,12 +58,10 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#target = new this.constructor.targetClass(...args.slice(1));
 
       this.#historyManager = new HistoryManager(options.model);
-      this.#stateManager = options.isComposite
-        ? new CompositeStateManager(options.host || this.#target, {
+      this.#stateManager = new CompositeStateManager(options.host || this.#target, {
           observe: options.observe,
           children: config.children || new Map()
-        })
-        : new StateManager(options.host || this.#target, options.observe);
+        });
 
       // Setup property forwarding
       cel.forward(this, this.#target);
@@ -101,33 +96,27 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @param {Object} newState - State to restore
      */
     set state(newState) {
-      if (this.#stateManager instanceof CompositeStateManager) {
-        const children = new Map();
-
-        if (newState.children) {
-          for (const [id, state] of newState.children) {
-            // Restore children that are not in the current state
-            if (this.state.children.has(id)) continue;
-            const lastHistory = this.#lastChildHistory(id);
-            if (lastHistory) {
-              state.history = cel.mergeHistories(
-                state.history,
-                lastHistory
-              );
-            }
-            children.set(id, state);
+      // Handle children
+      const children = new Map();
+      if (newState.children) {
+        for (const [id, state] of newState.children) {
+          // Restore children that are not in the current state
+          if (this.state.children.has(id)) continue;
+          const lastHistory = this.#lastChildHistory(id);
+          if (lastHistory) {
+            state.history = cel.mergeHistories(
+              state.history,
+              lastHistory
+            );
           }
+          children.set(id, state);
         }
-        this.#stateManager.state = {...newState, children};
-        return;
       }
-      this.#stateManager.state = newState;
+
+      this.#stateManager.state = { ...newState, children };
     }
 
     get children() {
-      if (!(this.#stateManager instanceof CompositeStateManager)) {
-      //  throw new Error('children are only available for composite state managers');
-      }
       return this.#stateManager.children;
     }
 
@@ -189,9 +178,6 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @returns {Rewindable} this instance for chaining
      */
     addChild(id, child) {
-      if (!(this.#stateManager instanceof CompositeStateManager)) {
-        throw new Error('addChild is only available for composite state managers');
-      }
       this.#stateManager.addChild(id, child);
       this.record();
       return this;
@@ -203,9 +189,6 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @returns {Rewindable} this instance for chaining
      */
     removeChild(id) {
-      if (!(this.#stateManager instanceof CompositeStateManager)) {
-        throw new Error('removeChild is only available for composite state managers');
-      }
       // Record the current state
       // This will capture the state of the child before it is removed
       // If the child state was already recorded, this will be a no-op
