@@ -896,21 +896,20 @@ const cel = {
    * @param {Object} target - The target (hosted) object that will handle the property calls.
    */
   forward(host, target) {
-    // Traverse the entire prototype chain
-    let currentPrototype = Object.getPrototypeOf(target);
+    // Start at the target object and traverse the entire prototype chain
+    let obj = target;
+    while (obj && obj !== Object.prototype) {
+      const properties = Object.getOwnPropertyDescriptors(obj);
 
-    while (currentPrototype && currentPrototype !== Object.prototype) {
-      const prototypeProperties = Object.getOwnPropertyDescriptors(currentPrototype);
-
-      for (const [propName, descriptor] of Object.entries(prototypeProperties)) {
+      for (const [name, descriptor] of Object.entries(properties)) {
         // Skip constructor, already defined methods, and private methods
-        if (propName === 'constructor' ||
-          propName in host ||
-          propName.startsWith('#')) continue;
+        if (name === 'constructor' ||
+          name in host ||
+          name.startsWith('#')) continue;
 
         // Handle getter/setter pairs
         if (descriptor.get || descriptor.set) {
-          Object.defineProperty(host, propName, {
+          Object.defineProperty(host, name, {
             get: descriptor.get ? () => descriptor.get.call(target) : undefined,
             set: descriptor.set ? (value) => descriptor.set.call(target, value) : undefined,
             enumerable: descriptor.enumerable,
@@ -919,16 +918,16 @@ const cel = {
         }
         // Handle methods explicitly
         else if (typeof descriptor.value === 'function') {
-          host[propName] = (...args) => {
+          host[name] = (...args) => {
             // Call the method on the target, preserving its original context
             return descriptor.value.call(target, ...args);
           };
         }
         // Handle regular properties
         else if (descriptor.value !== undefined) {
-          Object.defineProperty(host, propName, {
-            get: () => target[propName],
-            set: (value) => { target[propName] = value; },
+          Object.defineProperty(host, name, {
+            get: () => target[name],
+            set: (value) => { target[name] = value; },
             enumerable: descriptor.enumerable,
             configurable: descriptor.configurable
           });
@@ -936,7 +935,7 @@ const cel = {
       }
 
       // Move up the prototype chain
-      currentPrototype = Object.getPrototypeOf(currentPrototype);
+      obj = Object.getPrototypeOf(obj);
     }
   }
 };
