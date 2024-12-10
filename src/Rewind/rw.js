@@ -5,7 +5,7 @@ import {createRewindableElement} from "./createRewindableElement.js";
 import cel from "../lib/celerity/cel.js";
 
 // Type definitions
-import './types.js';
+import './__types__/types.js';
 
 /**
  * Creates a new class that extends BaseClass with undo/redo functionality. BaseClass may be either a simple class or

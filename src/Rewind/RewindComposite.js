@@ -4,7 +4,7 @@ import {rewind} from "./rewind.js";
 import cel from "../lib/celerity/cel.js";
 
 // Components
-import {DOMElement} from "./DOMElement.js";
+import {DOMElement} from "./__types__/DOMElement.js";
 
 const scheduleNextFrame =
   typeof requestAnimationFrame !== "undefined"

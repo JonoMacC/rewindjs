@@ -1,7 +1,7 @@
 import {beforeEach, describe, expect, it} from "vitest";
 import {createRewindable} from "../createRewindable.js";
 import {createRewindableComposite} from "../createRewindableComposite.js";
-import {generateKey} from "../generateKey.js";
+import {generateKey} from "../__utils__/generateKey.js";
 
 class BaseClass {
   #left = 0;

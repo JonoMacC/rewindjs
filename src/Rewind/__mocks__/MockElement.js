@@ -1,4 +1,4 @@
-import { AbstractElement } from "../AbstractElement.js";
+import { AbstractElement } from "../__types__/AbstractElement.js";
 
 /**
  * A mock element for testing purposes.

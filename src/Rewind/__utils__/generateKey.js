@@ -1,4 +1,4 @@
-import cel from "../lib/celerity/cel";
+import cel from "../../lib/celerity/cel";
 
 /**
  * Utility function to generate a unique key based on the target class and rewind options

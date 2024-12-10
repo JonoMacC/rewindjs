@@ -2,10 +2,10 @@ import {createRewindable} from "./createRewindable.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";
-import {generateKey} from "./generateKey.js";
+import {generateKey} from "./__utils__/generateKey.js";
 
 // Type definitions
-import './types.js';
+import './__types__/types.js';
 
 /**
  * Creates a class that adds undo/redo functionality to a target class that has separate rewindable children.

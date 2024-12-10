@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ChildStateManager } from '../ChildStateManager.js';
-import { generateKey } from "../generateKey.js";
+import { generateKey } from "../__utils__/generateKey.js";
 import { MockRewindableCounter as MockRewindable } from "../__mocks__/MockRewindableCounter";
 
 describe('ChildStateManager', () => {

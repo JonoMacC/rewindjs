@@ -6,7 +6,7 @@ import {CompositeStateManager} from "./CompositeStateManager";
 import cel from "../lib/celerity/cel.js";
 
 // Type definitions
-import './types.js';
+import './__types__/types.js';
 
 /**
  * Creates a class that adds undo/redo functionality to a target class. Properties in the `observe` option

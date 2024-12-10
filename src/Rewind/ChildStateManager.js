@@ -1,4 +1,4 @@
-import {generateKey} from "./generateKey.js";
+import {generateKey} from "./__utils__/generateKey.js";
 import cel from "../lib/celerity/cel";
 
 export class ChildStateManager {

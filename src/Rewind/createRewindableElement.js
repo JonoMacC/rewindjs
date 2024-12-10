@@ -5,7 +5,7 @@ import {EventHandler} from "./EventHandler.js";
 import cel from "../lib/celerity/cel.js";
 
 // Type definitions
-import './types.js';
+import './__types__/types.js';
 
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are

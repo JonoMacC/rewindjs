@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CompositeStateManager } from '../CompositeStateManager';
-import { generateKey } from "../generateKey.js";
+import { generateKey } from "../__utils__/generateKey.js";
 
 // Mocks
 import { MockRewindablePerson as MockRewindable } from '../__mocks__/MockRewindablePerson.js';
