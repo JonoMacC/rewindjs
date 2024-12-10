@@ -93,7 +93,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         this.recordBaseline = () => {};
       }
 
-      this.#rewindable = new RewindableClass(config, ...args.slice(1));
+      this.#rewindable = new RewindableClass(...args);
 
       // Defer intercept to ensure the RewindableElement is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
