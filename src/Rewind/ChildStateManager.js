@@ -13,7 +13,7 @@ export class ChildStateManager {
     this.#children = children;
 
     // Register child types
-    this.#children.forEach((child, id) => this.registerChildType(child.constructor));
+    this.#children.forEach(child => this.registerChildType(child.constructor));
   }
 
   /**
@@ -34,8 +34,8 @@ export class ChildStateManager {
 
     // Return a new instance
     return new ChildClass({
-      rewindHistory: childSnapshot.rewindHistory,
-      rewindIndex: childSnapshot.rewindIndex
+      history: childSnapshot.history,
+      index: childSnapshot.index
     });
   }
 
@@ -88,7 +88,7 @@ export class ChildStateManager {
         .map(([id, child], index) => [
           id,
           {
-            type: generateKey(child.constructor), //child.constructor.name,
+            type: generateKey(child.constructor),
             history: child.rewindHistory,
             index: child.rewindIndex,
             position: index
