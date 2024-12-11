@@ -68,16 +68,16 @@ describe("createRewindable", () => {
     });
 
     it("should record initial state", () => {
-      expect(component.history.length).toBe(1);
+      expect(component.rewindHistory.length).toBe(1);
       const initialState = { left: 0, top: 0, content: "", children: new Map() };
-      expect(component.history[0]).toStrictEqual(initialState);
+      expect(component.rewindHistory[0]).toStrictEqual(initialState);
     });
 
     it("should record changes to observed properties", () => {
       component.top = 100;
-      expect(component.history.length).toBe(2);
-      expect(component.history[0].top).toBe(0);
-      expect(component.history[1].top).toBe(100);
+      expect(component.rewindHistory.length).toBe(2);
+      expect(component.rewindHistory[0].top).toBe(0);
+      expect(component.rewindHistory[1].top).toBe(100);
     });
 
     it("should undo and redo changes", () => {
@@ -90,19 +90,19 @@ describe("createRewindable", () => {
 
     it("should coalesce method calls", () => {
       component.setPosition(10, 20);
-      expect(component.history.length).toBe(2);
-      expect(component.history[1]).toStrictEqual({ top: 10, left: 20, content: "", children: new Map() });
+      expect(component.rewindHistory.length).toBe(2);
+      expect(component.rewindHistory[1]).toStrictEqual({ top: 10, left: 20, content: "", children: new Map() });
     });
 
     it("should suspend and resume recording", () => {
       component.suspend();
       component.top = 100;
-      expect(component.history.length).toBe(1);
+      expect(component.rewindHistory.length).toBe(1);
       component.resume();
       component.top = 200;
-      expect(component.history.length).toBe(2);
-      expect(component.history[0]).toStrictEqual({ top: 0, left: 0, content: "", children: new Map() });
-      expect(component.history[1]).toStrictEqual({ top: 200, left: 0, content: "", children: new Map() });
+      expect(component.rewindHistory.length).toBe(2);
+      expect(component.rewindHistory[0]).toStrictEqual({ top: 0, left: 0, content: "", children: new Map() });
+      expect(component.rewindHistory[1]).toStrictEqual({ top: 200, left: 0, content: "", children: new Map() });
     });
 
     it("should travel to a specific index", () => {
@@ -118,7 +118,7 @@ describe("createRewindable", () => {
       component.top = 100;
       component.top = 200;
       component.drop(1);
-      expect(component.history.length).toBe(2);
+      expect(component.rewindHistory.length).toBe(2);
       expect(component.top).toBe(200);
     });
 
@@ -135,16 +135,16 @@ describe("createRewindable", () => {
         index,
       });
 
-      expect(component.history).toEqual(history);
+      expect(component.rewindHistory).toEqual(history);
       expect(component.content).toBe("Second");
       expect(component.top).toBe(10);
       expect(component.left).toBe(10);
 
       // Verify that the current index is correct
-      expect(component.index).toBe(index);
+      expect(component.rewindIndex).toBe(index);
 
       // Verify that no additional state was recorded
-      expect(component.history.length).toBe(history.length);
+      expect(component.rewindHistory.length).toBe(history.length);
 
       // Verify undo functionality
       component.undo();
@@ -186,15 +186,15 @@ describe("createRewindable", () => {
         .redo(); // "Hello"
 
       // Verify that we have returned to the last state
-      expect(component.history.length).toBe(3);
-      expect(component.history[2].content).toBe("Hello");
-      expect(component.index).toBe(2);
+      expect(component.rewindHistory.length).toBe(3);
+      expect(component.rewindHistory[2].content).toBe("Hello");
+      expect(component.rewindIndex).toBe(2);
 
       // Set the content to a new value
       component.content = "Hello World";
-      expect(component.history.length).toBe(4);
-      expect(component.history[3].content).toBe("Hello World");
-      expect(component.index).toBe(3);
+      expect(component.rewindHistory.length).toBe(4);
+      expect(component.rewindHistory[3].content).toBe("Hello World");
+      expect(component.rewindIndex).toBe(3);
     });
   });
 
@@ -211,18 +211,16 @@ describe("createRewindable", () => {
       });
 
       it("should record initial state", () => {
-        expect(component.history.length).toBe(1);
+        expect(component.rewindHistory.length).toBe(1);
         const initialState = { left: 0, top: 0, content: "", children: new Map() };
-        expect(component.history[0]).toStrictEqual(initialState);
+        expect(component.rewindHistory[0]).toStrictEqual(initialState);
       });
 
       it("should record changes to observed properties", () => {
         component.top = 100;
-        console.log(component.top);
-        console.log(component.history);
-        expect(component.history.length).toBe(2);
-        expect(component.history[0].top).toBe(0);
-        expect(component.history[1].top).toBe(100);
+        expect(component.rewindHistory.length).toBe(2);
+        expect(component.rewindHistory[0].top).toBe(0);
+        expect(component.rewindHistory[1].top).toBe(100);
       });
 
       it("should undo and redo changes", () => {
@@ -235,19 +233,19 @@ describe("createRewindable", () => {
 
       it("should coalesce method calls", () => {
         component.setPosition(10, 20);
-        expect(component.history.length).toBe(2);
-        expect(component.history[1]).toStrictEqual({ top: 10, left: 20, content: "", children: new Map() });
+        expect(component.rewindHistory.length).toBe(2);
+        expect(component.rewindHistory[1]).toStrictEqual({ top: 10, left: 20, content: "", children: new Map() });
       });
 
       it("should suspend and resume recording", () => {
         component.suspend();
         component.top = 100;
-        expect(component.history.length).toBe(1);
+        expect(component.rewindHistory.length).toBe(1);
         component.resume();
         component.top = 200;
-        expect(component.history.length).toBe(2);
-        expect(component.history[0]).toStrictEqual({ top: 0, left: 0, content: "", children: new Map() });
-        expect(component.history[1]).toStrictEqual({ top: 200, left: 0, content: "", children: new Map() });
+        expect(component.rewindHistory.length).toBe(2);
+        expect(component.rewindHistory[0]).toStrictEqual({ top: 0, left: 0, content: "", children: new Map() });
+        expect(component.rewindHistory[1]).toStrictEqual({ top: 200, left: 0, content: "", children: new Map() });
       });
 
       it("should travel to a specific index", () => {
@@ -263,7 +261,7 @@ describe("createRewindable", () => {
         component.top = 100;
         component.top = 200;
         component.drop(1);
-        expect(component.history.length).toBe(2);
+        expect(component.rewindHistory.length).toBe(2);
         expect(component.top).toBe(200);
       });
 
@@ -280,16 +278,16 @@ describe("createRewindable", () => {
           index,
         });
 
-        expect(component.history).toEqual(history);
+        expect(component.rewindHistory).toEqual(history);
         expect(component.content).toBe("Second");
         expect(component.top).toBe(10);
         expect(component.left).toBe(10);
 
         // Verify that the current index is correct
-        expect(component.index).toBe(index);
+        expect(component.rewindIndex).toBe(index);
 
         // Verify that no additional state was recorded
-        expect(component.history.length).toBe(history.length);
+        expect(component.rewindHistory.length).toBe(history.length);
 
         // Verify undo functionality
         component.undo();
@@ -331,15 +329,15 @@ describe("createRewindable", () => {
           .redo(); // "Hello"
 
         // Verify that we have returned to the last state
-        expect(component.history.length).toBe(3);
-        expect(component.history[2].content).toBe("Hello");
-        expect(component.index).toBe(2);
+        expect(component.rewindHistory.length).toBe(3);
+        expect(component.rewindHistory[2].content).toBe("Hello");
+        expect(component.rewindIndex).toBe(2);
 
         // Set the content to a new value
         component.content = "Hello World";
-        expect(component.history.length).toBe(4);
-        expect(component.history[3].content).toBe("Hello World");
-        expect(component.index).toBe(3);
+        expect(component.rewindHistory.length).toBe(4);
+        expect(component.rewindHistory[3].content).toBe("Hello World");
+        expect(component.rewindIndex).toBe(3);
       });
     });
 
@@ -362,19 +360,19 @@ describe("createRewindable", () => {
 
       it("should handle adding children", () => {
         const child = new Rewindable();
-        composite.addChild("1", child);
+        composite.addRewindable("1", child);
 
         // Verify that the child was added
-        expect(composite.children.get("1")).toStrictEqual(child);
+        expect(composite.rewindChildren.get("1")).toStrictEqual(child);
       });
 
       it("should handle removing children", () => {
         const child = new Rewindable();
-        composite.addChild("1", child);
-        composite.removeChild("1");
+        composite.addRewindable("1", child);
+        composite.removeRewindable("1");
 
         // Verify that the child was removed
-        expect(composite.children.get("1")).toBeUndefined();
+        expect(composite.rewindChildren.get("1")).toBeUndefined();
       });
 
       it("should add multiple children of different types", () => {
@@ -386,12 +384,12 @@ describe("createRewindable", () => {
         const child2 = new AltRewindable();
 
         composite
-          .addChild("1", child1)
-          .addChild("2", child2);
+          .addRewindable("1", child1)
+          .addRewindable("2", child2);
 
-        expect(composite.children.size).toBe(2);
-        expect(composite.children.get("1")).toStrictEqual(child1);
-        expect(composite.children.get("2")).toStrictEqual(child2);
+        expect(composite.rewindChildren.size).toBe(2);
+        expect(composite.rewindChildren.get("1")).toStrictEqual(child1);
+        expect(composite.rewindChildren.get("2")).toStrictEqual(child2);
       });
 
       it("should register children of different types", () => {
@@ -403,15 +401,15 @@ describe("createRewindable", () => {
         const child2 = new AltRewindable();
 
         composite
-          .addChild("1", child1)
-          .addChild("2", child2);
+          .addRewindable("1", child1)
+          .addRewindable("2", child2);
 
         // Verify children were correctly registered
         const key1 = generateKey(child1.constructor);
         const key2 = generateKey(child2.constructor);
 
-        expect(composite.state.children.get("1").type).toBe(key1);
-        expect(composite.state.children.get("2").type).toBe(key2);
+        expect(composite.rewindState.children.get("1").type).toBe(key1);
+        expect(composite.rewindState.children.get("2").type).toBe(key2);
       });
     });
 
@@ -433,46 +431,46 @@ describe("createRewindable", () => {
 
       it("should record when a child is added and removed", () => {
         // Add the child
-        composite.addChild("1", child);
+        composite.addRewindable("1", child);
 
         // Remove the child
-        composite.removeChild("1");
+        composite.removeRewindable("1");
 
         // Verify that no children are present
-        expect(composite.children.size).toBe(0);
+        expect(composite.rewindChildren.size).toBe(0);
 
         // Verify that adding and removing children updates the history
-        expect(composite.history.length).toBe(3);
-        expect(composite.history[0].children.size).toBe(0);
-        expect(composite.history[1].children.size).toBe(1);
-        expect(composite.history[2].children.size).toBe(0);
+        expect(composite.rewindHistory.length).toBe(3);
+        expect(composite.rewindHistory[0].children.size).toBe(0);
+        expect(composite.rewindHistory[1].children.size).toBe(1);
+        expect(composite.rewindHistory[2].children.size).toBe(0);
       });
 
       it("should restore a deleted child from history", () => {
         // Add the child
-        composite.addChild("1", child);
+        composite.addRewindable("1", child);
 
         // Remove the child
-        composite.removeChild("1");
+        composite.removeRewindable("1");
 
         // Verify that no children are present
-        expect(composite.children.size).toBe(0);
-        expect(composite.index).toBe(2);
+        expect(composite.rewindChildren.size).toBe(0);
+        expect(composite.rewindIndex).toBe(2);
 
         // Undo the removal
         composite.undo();
 
         // Verify that the composite traveled to the previous state
-        expect(composite.index).toBe(1);
+        expect(composite.rewindIndex).toBe(1);
 
         // Verify that the child is in history
-        expect(composite.history[1].children.size).toBe(1);
+        expect(composite.rewindHistory[1].children.size).toBe(1);
 
         // Verify that the current state has the child
-        expect(composite.state.children.size).toBe(1);
+        expect(composite.rewindState.children.size).toBe(1);
 
         const originalChild = child;
-        const restoredChild = composite.children.get("1");
+        const restoredChild = composite.rewindChildren.get("1");
 
         /**
          * originalChild and restoredChild cannot be directly compared using toEqual because
@@ -498,16 +496,16 @@ describe("createRewindable", () => {
 
       it("should restore the history of a deleted child", () => {
         // Add the child
-        composite.addChild("1", child);
+        composite.addRewindable("1", child);
 
         // Change the value of the child
         child.value = 7;
 
         // Remove the child
-        composite.removeChild("1");
+        composite.removeRewindable("1");
 
         // Verify that the child's last state was recorded to the composite history
-        const historyBeforeRemoval = composite.history[2];
+        const historyBeforeRemoval = composite.rewindHistory[2];
         const lastChildHistory = historyBeforeRemoval.children.get("1").history;
         expect(lastChildHistory.length).toBe(2);
         expect(lastChildHistory[0].value).toBe(0);
@@ -517,11 +515,11 @@ describe("createRewindable", () => {
         composite.undo();
 
         // Verify the child's history and current state
-        const addedChild = composite.children.get("1");
+        const addedChild = composite.rewindChildren.get("1");
         expect(addedChild.value).toBe(7);
-        expect(addedChild.history.length).toBe(2);
-        expect(addedChild.history[0].value).toBe(0);
-        expect(addedChild.history[1].value).toBe(7);
+        expect(addedChild.rewindHistory.length).toBe(2);
+        expect(addedChild.rewindHistory[0].value).toBe(0);
+        expect(addedChild.rewindHistory[1].value).toBe(7);
       });
     });
   });
