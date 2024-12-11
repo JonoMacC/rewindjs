@@ -7,9 +7,6 @@ import cel from "../lib/celerity/cel.js";
 // Type definitions
 import './__types__/types.js';
 
-// TODO: Add functionality for composite rewindables
-// TODO: Remove custom accessor for manual recording
-
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are
  * automatically recorded when changed, and methods in `coalesce` result in a single recording each time they are
@@ -55,6 +52,7 @@ import './__types__/types.js';
  */
 export function createRewindableElement(TargetClass, rewindOptions = {}) {
   return class RewindableElement extends TargetClass {
+    static targetClass = TargetClass;
     static rewindOptions = rewindOptions;
 
     #rewindable;
@@ -80,7 +78,8 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       const RewindableClass = createRewindable(TargetClass, {
         ...options,
         propertyHandlers: this.#propertyHandlers,
-        host: this
+        host: this,
+        restoreCallback: (id, child) => this.addRewindable(id, child)
       });
 
       RewindableClass.prototype.recordBaseline = function() {
@@ -172,7 +171,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     get rewindChildren() {
-      return this.#rewindable.children;
+      return this.#rewindable.rewindChildren;
     }
 
     connectedCallback() {
@@ -230,8 +229,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     // Child Management
-    // TODO: Call addChild from here when restoring state
-    // TODO: Call removeChild from here when setting state
 
     addRewindable(id, child) {
       // Add the child to the state
