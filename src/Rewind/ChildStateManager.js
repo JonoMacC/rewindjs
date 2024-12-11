@@ -34,8 +34,8 @@ export class ChildStateManager {
 
     // Return a new instance
     return new ChildClass({
-      history: childSnapshot.history,
-      index: childSnapshot.index
+      rewindHistory: childSnapshot.rewindHistory,
+      rewindIndex: childSnapshot.rewindIndex
     });
   }
 
@@ -89,8 +89,8 @@ export class ChildStateManager {
           id,
           {
             type: generateKey(child.constructor), //child.constructor.name,
-            history: child.history,
-            index: child.index,
+            history: child.rewindHistory,
+            index: child.rewindIndex,
             position: index
           }
         ])
@@ -104,7 +104,7 @@ export class ChildStateManager {
     // Remove children that are not in newState
     for (const id of this.#children.keys()) {
       if (!newState.has(id)) {
-        this.#children.delete(id);
+        this.removeChild(id);
       }
     }
 
@@ -124,10 +124,10 @@ export class ChildStateManager {
 
       // Update child's state if needed
       if (
-        child.index !== state.index ||
-        !cel.deepEqual(child.history, state.history)
+        child.rewindIndex !== state.index ||
+        !cel.deepEqual(child.rewindHistory, state.history)
       ) {
-        child.history = state.history;
+        child.rewindHistory = state.history;
         child.travel(state.index);
       }
     }

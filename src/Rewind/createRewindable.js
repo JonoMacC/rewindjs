@@ -68,13 +68,13 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
       // Handle initial history and index (instance-specific config)
       if (config.history) {
-        this.history = config.history;
+        this.rewindHistory = config.history;
         const index = config.index ?? config.history.length - 1;
         this.travel(index);
       }
 
       // Handle initial state recording
-      if (config.history && this.history.length !== 0) {
+      if (config.history && this.rewindHistory.length !== 0) {
         this.#baselineRecorded = true;
       }
       this.recordBaseline();
@@ -88,20 +88,20 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     /**
      * @returns {Object} Current state
      */
-    get state() {
+    get rewindState() {
       return this.#stateManager.state;
     }
 
     /**
      * @param {Object} newState - State to restore
      */
-    set state(newState) {
+    set rewindState(newState) {
       // Handle children
       const children = new Map();
       if (newState.children) {
         for (const [id, state] of newState.children) {
           // Restore children that are not in the current state
-          if (this.state.children.has(id)) continue;
+          if (this.rewindState.children.has(id)) continue;
           const lastHistory = this.#lastChildHistory(id);
           if (lastHistory) {
             state.history = cel.mergeHistories(
@@ -116,19 +116,19 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#stateManager.state = { ...newState, children };
     }
 
-    get children() {
+    get rewindChildren() {
       return this.#stateManager.children;
     }
 
-    get index() {
+    get rewindIndex() {
       return this.#historyManager.index;
     }
 
-    get history() {
+    get rewindHistory() {
       return this.#historyManager.history;
     }
 
-    set history(newHistory) {
+    set rewindHistory(newHistory) {
       this.#historyManager.history = newHistory;
     }
 
@@ -138,7 +138,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @returns {Object[]|null} The history for the child or null
      */
     #lastChildHistory(id) {
-      const lastHistory = this.history.findLast(history => history.children.has(id));
+      const lastHistory = this.rewindHistory.findLast(history => history.children.has(id));
       return lastHistory ? lastHistory.children.get(id).history : null;
     }
 
@@ -172,23 +172,23 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     }
 
     /**
-     * Adds a child (only available for composite state managers)
+     * Adds a rewindable child
      * @param {string} id - Unique identifier for the child
      * @param {Object} child - Child to add
      * @returns {Rewindable} this instance for chaining
      */
-    addChild(id, child) {
+    addRewindable(id, child) {
       this.#stateManager.addChild(id, child);
       this.record();
       return this;
     }
 
     /**
-     * Removes a child (only available for composite state managers)
+     * Removes a rewindable child
      * @param {string} id - Child identifier to remove
      * @returns {Rewindable} this instance for chaining
      */
-    removeChild(id) {
+    removeRewindable(id) {
       // Record the current state
       // This will capture the state of the child before it is removed
       // If the child state was already recorded, this will be a no-op
@@ -208,7 +208,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     recordBaseline() {
       if (this.#baselineRecorded) return;
 
-      console.log('Recording baseline with state:', this.state);
+      console.log('Recording baseline with state:', this.rewindState);
       this.record();
       this.#baselineRecorded = true;
     }
@@ -220,7 +220,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     record() {
       if (!this.#recording) return this;
       console.info(`Recording snapshot...`);
-      this.#historyManager.record(this.state);
+      this.#historyManager.record(this.rewindState);
       return this;
     }
 
@@ -270,7 +270,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       if (!previousState) return this;
 
       this.suspend();
-      this.state = this.#historyManager.undo();
+      this.rewindState = this.#historyManager.undo();
       this.resume();
       return this;
     }
@@ -284,7 +284,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       if (!nextState) return this;
 
       this.suspend();
-      this.state = this.#historyManager.redo();
+      this.rewindState = this.#historyManager.redo();
       this.resume();
       return this;
     }

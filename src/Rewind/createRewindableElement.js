@@ -13,8 +13,7 @@ import './__types__/types.js';
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are
  * automatically recorded when changed, and methods in `coalesce` result in a single recording each time they are
- * called. Use `debounce` to add debounce to auto-recorded properties. Use `accessor` to provide a custom accessor
- * for manual recording.
+ * called. Use `debounce` to add debounce to auto-recorded properties.
  *
  * @param {typeof HTMLElement} TargetClass - The class to extend.
  * @param {RewindElementOptions} rewindOptions - Options for the Rewindable class.
@@ -137,7 +136,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     #refocus() {
-      if (typeof this.focus === 'function' && typeof document.activeElement === 'object' && !this.contains(document.activeElement)) {
+      if (typeof this.focus === 'function'
+        && typeof document.activeElement === 'object'
+        && !this.contains(document.activeElement)) {
         this.focus();
       }
     }
@@ -147,27 +148,31 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     /**
      * @returns {Object} Current state
      */
-    get state() {
-      return this.#rewindable.state;
+    get rewindState() {
+      return this.#rewindable.rewindState;
     }
 
     /**
      * @param {Object} newState - State to restore
      */
-    set state(newState) {
-      this.#rewindable.state = newState;
+    set rewindState(newState) {
+      this.#rewindable.rewindState = newState;
     }
 
-    get index() {
-      return this.#rewindable.index;
+    get rewindIndex() {
+      return this.#rewindable.rewindIndex;
     }
 
-    get history() {
-      return this.#rewindable.history;
+    get rewindHistory() {
+      return this.#rewindable.rewindHistory;
     }
 
-    set history(newHistory) {
-      this.#rewindable.history = newHistory;
+    set rewindHistory(newHistory) {
+      this.#rewindable.rewindHistory = newHistory;
+    }
+
+    get rewindChildren() {
+      return this.#rewindable.children;
     }
 
     connectedCallback() {
@@ -177,6 +182,10 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       // Setup keyboard shortcuts for undo and redo
       this.#setupKeyboardHandlers(options);
     }
+
+    // Public API methods
+
+    // Basic Rewind
 
     record() {
       this.#rewindable.record();
@@ -217,6 +226,48 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     redo() {
       this.#rewindable.redo();
       this.#refocus();
+      return this;
+    }
+
+    // Child Management
+    // TODO: Call addChild from here when restoring state
+    // TODO: Call removeChild from here when setting state
+
+    addRewindable(id, child) {
+      // Add the child to the state
+      this.#rewindable.addRewindable(id, child);
+
+      // Get the position from the state
+      const {position} = this.#rewindable.rewindChildren.get(id);
+
+      // Add the child to the DOM in the correct position
+      this.insertBefore(child, this.children[position]);
+      return this;
+    }
+
+    removeRewindable(id) {
+      // Get the child
+      const child = this.#rewindable.rewindChildren.get(id);
+
+      // Determine if child is focused
+      const focused = document.activeElement === child;
+
+      // Get previous child
+      const previousChild = child.previousElementSibling;
+
+      // Remove the child from the state
+      this.#rewindable.removeRewindable(id);
+
+      // Remove the child from the DOM
+      child.remove();
+
+      // Manage focus if child was focused
+      if (focused) {
+        // Focus previous child if any, else focus this
+        const nextElement = previousChild || this;
+        nextElement.focus();
+      }
+
       return this;
     }
 
