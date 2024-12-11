@@ -49,17 +49,19 @@ describe("rewind", () => {
   });
 
   it("should record initial state", () => {
-    expect(rwCheckbox.history.length).toBe(1);
-    expect(Object.keys(rwCheckbox.history[0])).toEqual([
-      "checked",
-    ]);
+    const initialState = {
+      checked: false,
+      children: new Map()
+    }
+    expect(rwCheckbox.rewindHistory.length).toBe(1);
+    expect(rwCheckbox.rewindHistory[0]).toEqual(initialState);
   });
 
   it("should record changes to snapshot properties", () => {
     rwCheckbox.checked = true;
-    expect(rwCheckbox.history.length).toBe(2);
-    expect(rwCheckbox.history[0].checked).toBe(false);
-    expect(rwCheckbox.history[1].checked).toBe(true);
+    expect(rwCheckbox.rewindHistory.length).toBe(2);
+    expect(rwCheckbox.rewindHistory[0].checked).toBe(false);
+    expect(rwCheckbox.rewindHistory[1].checked).toBe(true);
   });
 
   it("should undo and redo changes", () => {
@@ -81,7 +83,7 @@ describe("rewind", () => {
     // Advance fake timers by the debounce time
     vi.advanceTimersByTime(400);
 
-    expect(rwTextInput.history.length).toBe(2);
+    expect(rwTextInput.rewindHistory.length).toBe(2);
 
     // Restore usage of real timers
     vi.useRealTimers();
@@ -90,16 +92,16 @@ describe("rewind", () => {
   it("should handle non-debounced properties", () => {
     rwCheckbox.checked = true;
     rwCheckbox.checked = false;
-    expect(rwCheckbox.history.length).toBe(3);
+    expect(rwCheckbox.rewindHistory.length).toBe(3);
   });
 
   it("should suspend and resume recording", () => {
     rwCheckbox.suspend();
     rwCheckbox.checked = true;
-    expect(rwCheckbox.history.length).toBe(1);
+    expect(rwCheckbox.rewindHistory.length).toBe(1);
     rwCheckbox.resume();
     rwCheckbox.checked = true;
-    expect(rwCheckbox.history.length).toBe(2);
+    expect(rwCheckbox.rewindHistory.length).toBe(2);
   });
 
   it("should travel to a specific index", () => {
@@ -113,15 +115,15 @@ describe("rewind", () => {
     rwCheckbox.checked = true;
     rwCheckbox.checked = false;
     rwCheckbox.drop(1);
-    expect(rwCheckbox.history.length).toBe(2);
+    expect(rwCheckbox.rewindHistory.length).toBe(2);
     expect(rwCheckbox.checked).toBe(false);
   });
 
   it("should handle initial history and index", () => {
     const history = [
-      { value: "First" },
-      { value: "Second" },
-      { value: "Third" },
+      { value: "First", children: new Map() },
+      { value: "Second", children: new Map() },
+      { value: "Third", children: new Map() },
     ];
     const index = 1;
 
@@ -130,14 +132,14 @@ describe("rewind", () => {
       index,
     });
 
-    expect(rwTextInput.history).toEqual(history);
+    expect(rwTextInput.rewindHistory).toEqual(history);
     expect(rwTextInput.value).toBe("Second");
 
     // Verify that the current index is correct
-    expect(rwTextInput.index).toBe(index);
+    expect(rwTextInput.rewindIndex).toBe(index);
 
     // Verify that no additional state was recorded
-    expect(rwTextInput.history.length).toBe(history.length);
+    expect(rwTextInput.rewindHistory.length).toBe(history.length);
 
     // Verify undo functionality
     rwTextInput.undo();
@@ -157,9 +159,9 @@ describe("rewind", () => {
     vi.useFakeTimers();
 
     const history = [
-      { value: "He" },
-      { value: "Hell" },
-      { value: "Hello" },
+      { value: "He", children: new Map() },
+      { value: "Hell", children: new Map() },
+      { value: "Hello", children: new Map() },
     ];
     const index = 2;
 
@@ -176,9 +178,9 @@ describe("rewind", () => {
       .redo(); // "Hello"
 
     // Verify that we have returned to the last state
-    expect(rwTextInput.history.length).toBe(3);
-    expect(rwTextInput.history[2].value).toBe("Hello");
-    expect(rwTextInput.index).toBe(2);
+    expect(rwTextInput.rewindHistory.length).toBe(3);
+    expect(rwTextInput.rewindHistory[2].value).toBe("Hello");
+    expect(rwTextInput.rewindIndex).toBe(2);
 
     // Set the content to a new value
     rwTextInput.value = "Hello World";
@@ -186,9 +188,9 @@ describe("rewind", () => {
     // Advance fake timers by the debounce time
     vi.advanceTimersByTime(400);
 
-    expect(rwTextInput.history.length).toBe(4);
-    expect(rwTextInput.history[3].value).toBe("Hello World");
-    expect(rwTextInput.index).toBe(3);
+    expect(rwTextInput.rewindHistory.length).toBe(4);
+    expect(rwTextInput.rewindHistory[3].value).toBe("Hello World");
+    expect(rwTextInput.rewindIndex).toBe(3);
 
     // Restore usage of real timers
     vi.useRealTimers();
