@@ -4,13 +4,16 @@ import cel from "../lib/celerity/cel";
 export class ChildStateManager {
   #children;
   #childTypes = new Map();
+  #restoreCallback;
+  #childPositions = new Map();
 
   /**
    * Manages the state of a collection of rewindable children
    * @param {Map<string, Rewindable>} children - Collection of rewindable children to manage
    */
-  constructor(children = new Map()) {
+  constructor(children = new Map(), restoreCallback = null) {
     this.#children = children;
+    this.#restoreCallback = restoreCallback;
 
     // Register child types
     this.#children.forEach(child => this.registerChildType(child.constructor));
@@ -29,8 +32,6 @@ export class ChildStateManager {
     if (!ChildClass) {
       throw new Error(`Unknown child type: ${type}`);
     }
-    console.log({type});
-    console.log(this.#childTypes);
 
     // Return a new instance
     return new ChildClass({
@@ -47,7 +48,11 @@ export class ChildStateManager {
     child.travel(index);
 
     // Add the child
-    this.addChild(id, child);
+    if (this.#restoreCallback) {
+      this.#restoreCallback(id, child);
+    } else {
+      this.addChild(id, child);
+    }
 
     return child;
   }
@@ -58,6 +63,9 @@ export class ChildStateManager {
    */
   registerChildType(ChildClass) {
     const type = generateKey(ChildClass);
+    if (this.#childTypes.has(type)) {
+      return;
+    }
     console.info(`Registering child type: ${type}`);
     this.#childTypes.set(type, ChildClass);
   }
@@ -85,13 +93,15 @@ export class ChildStateManager {
   get state() {
     return new Map(
       Array.from(this.#children.entries())
-        .map(([id, child], index) => [
+        .map(([id, child], _) => [
           id,
           {
             type: generateKey(child.constructor),
             history: child.rewindHistory,
             index: child.rewindIndex,
-            position: index
+            // Use the explicitly set position, or fall back to current order
+            position: this.#childPositions.get(id) ??
+                      Array.from(this.#children.keys()).indexOf(id)
           }
         ])
     );
@@ -111,6 +121,11 @@ export class ChildStateManager {
     // Add or update children from newState
     for (const [id, state] of newState.entries()) {
       let child = this.#children.get(id);
+
+      // If position is explicitly defined in the state, set it
+      if (state.position !== undefined) {
+        this.#childPositions.set(id, state.position);
+      }
 
       if (child) {
         // Update existing child

@@ -60,7 +60,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#historyManager = new HistoryManager(options.model);
       this.#stateManager = new CompositeStateManager(options.host || this.#target, {
           observe: options.observe,
-          children: config.children || new Map()
+          children: config.children || new Map(),
+          restoreCallback: options.restoreCallback
         });
 
       // Setup property forwarding
@@ -97,22 +98,22 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      */
     set rewindState(newState) {
       // Handle children
-      const children = new Map();
+      const children = new Map(this.rewindState.children);
       if (newState.children) {
         for (const [id, state] of newState.children) {
-          // Restore children that are not in the current state
-          if (this.rewindState.children.has(id)) continue;
-          const lastHistory = this.#lastChildHistory(id);
-          if (lastHistory) {
-            state.history = cel.mergeHistories(
-              state.history,
-              lastHistory
-            );
+          // Restore history of children that are not in the current state
+          if (!this.rewindState.children.has(id)) {
+            const lastHistory = this.#lastChildHistory(id);
+            if (lastHistory) {
+              state.history = cel.mergeHistories(
+                state.history,
+                lastHistory
+              );
+            }
           }
           children.set(id, state);
         }
       }
-
       this.#stateManager.state = { ...newState, children };
     }
 
