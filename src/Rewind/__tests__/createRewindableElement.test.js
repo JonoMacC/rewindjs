@@ -78,21 +78,22 @@ describe("createRewindableElement", () => {
   });
 
   it("should record initial state", () => {
-    expect(component.history.length).toBe(1);
+    expect(component.rewindHistory.length).toBe(1);
     const initialState = {
       content: "",
       top: 0,
       left: 0,
       selected: false,
+      children: new Map()
     };
-    expect(component.history[0]).toStrictEqual(initialState);
+    expect(component.rewindHistory[0]).toStrictEqual(initialState);
   });
 
   it("should record changes to observed properties", () => {
     component.top = 100;
-    expect(component.history.length).toBe(2);
-    expect(component.history[0].top).toBe(0);
-    expect(component.history[1].top).toBe(100);
+    expect(component.rewindHistory.length).toBe(2);
+    expect(component.rewindHistory[0].top).toBe(0);
+    expect(component.rewindHistory[1].top).toBe(100);
   });
 
   it("should undo and redo changes", () => {
@@ -105,8 +106,14 @@ describe("createRewindableElement", () => {
 
   it("should coalesce method calls", () => {
     component.setPosition(10, 20);
-    expect(component.history.length).toBe(2);
-    expect(component.history[1]).toStrictEqual({ content: "", top: 10, left: 20, selected: false });
+    expect(component.rewindHistory.length).toBe(2);
+    expect(component.rewindHistory[1]).toStrictEqual({
+      content: "",
+      top: 10,
+      left: 20,
+      selected: false,
+      children: new Map()
+    });
   });
 
   it("should handle debounced properties", async () => {
@@ -120,7 +127,7 @@ describe("createRewindableElement", () => {
     // Advance fake timers by the debounce time
     vi.advanceTimersByTime(400);
 
-    expect(component.history.length).toBe(2);
+    expect(component.rewindHistory.length).toBe(2);
 
     // Restore usage of real timers
     vi.useRealTimers();
@@ -129,18 +136,30 @@ describe("createRewindableElement", () => {
   it("should handle non-debounced properties", () => {
     component.selected = true;
     component.selected = false;
-    expect(component.history.length).toBe(3);
+    expect(component.rewindHistory.length).toBe(3);
   });
 
   it("should suspend and resume recording", () => {
     component.suspend();
     component.top = 100;
-    expect(component.history.length).toBe(1);
+    expect(component.rewindHistory.length).toBe(1);
     component.resume();
     component.top = 200;
-    expect(component.history.length).toBe(2);
-    expect(component.history[0]).toStrictEqual({ content: "", top: 0, left: 0, selected: false });
-    expect(component.history[1]).toStrictEqual({ content: "", top: 200, left: 0, selected: false });
+    expect(component.rewindHistory.length).toBe(2);
+    expect(component.rewindHistory[0]).toStrictEqual({
+      content: "",
+      top: 0,
+      left: 0,
+      selected: false,
+      children: new Map()
+    });
+    expect(component.rewindHistory[1]).toStrictEqual({
+      content: "",
+      top: 200,
+      left: 0,
+      selected: false,
+      children: new Map()
+    });
   });
 
   it("should travel to a specific index", () => {
@@ -156,15 +175,15 @@ describe("createRewindableElement", () => {
     component.top = 100;
     component.top = 200;
     component.drop(1);
-    expect(component.history.length).toBe(2);
+    expect(component.rewindHistory.length).toBe(2);
     expect(component.top).toBe(200);
   });
 
   it("should handle initial history and index", () => {
     const history = [
-      { content: "First", top: 0, left: 0, selected: false },
-      { content: "Second", top: 10, left: 10, selected: true },
-      { content: "Third", top: 20, left: 20, selected: false },
+      { content: "First", top: 0, left: 0, selected: false, children: new Map() },
+      { content: "Second", top: 10, left: 10, selected: true, children: new Map() },
+      { content: "Third", top: 20, left: 20, selected: false, children: new Map() },
     ];
     const index = 1;
     
@@ -173,17 +192,17 @@ describe("createRewindableElement", () => {
       index
     });
 
-    expect(component.history).toEqual(history);
+    expect(component.rewindHistory).toEqual(history);
     expect(component.content).toBe("Second");
     expect(component.top).toBe(10);
     expect(component.left).toBe(10);
     expect(component.selected).toBe(true);
 
     // Verify that the current index is correct
-    expect(component.index).toBe(index);
+    expect(component.rewindIndex).toBe(index);
 
     // Verify that no additional state was recorded
-    expect(component.history.length).toBe(history.length);
+    expect(component.rewindHistory.length).toBe(history.length);
 
     // Verify undo functionality
     component.undo();
@@ -212,9 +231,9 @@ describe("createRewindableElement", () => {
     vi.useFakeTimers();
 
     const history = [
-      { content: "He" },
-      { content: "Hell" },
-      { content: "Hello" },
+      { content: "He", top: 0, left: 0, selected: false, children: new Map() },
+      { content: "Hell", top: 0, left: 0, selected: false, children: new Map() },
+      { content: "Hello", top: 0, left: 0, selected: false, children: new Map() },
     ];
     const index = 2;
 
@@ -231,9 +250,10 @@ describe("createRewindableElement", () => {
       .redo(); // "Hello"
 
     // Verify that we have returned to the last state
-    expect(component.history.length).toBe(3);
-    expect(component.history[2].content).toBe("Hello");
-    expect(component.index).toBe(2);
+    console.log(component.rewindHistory);
+    expect(component.rewindHistory.length).toBe(3);
+    expect(component.rewindHistory[2].content).toBe("Hello");
+    expect(component.rewindIndex).toBe(2);
 
     // Set the content to a new value
     component.content = "Hello World";
@@ -241,9 +261,9 @@ describe("createRewindableElement", () => {
     // Advance fake timers by the debounce time
     vi.advanceTimersByTime(400);
 
-    expect(component.history.length).toBe(4);
-    expect(component.history[3].content).toBe("Hello World");
-    expect(component.index).toBe(3);
+    expect(component.rewindHistory.length).toBe(4);
+    expect(component.rewindHistory[3].content).toBe("Hello World");
+    expect(component.rewindIndex).toBe(3);
 
     // Restore usage of real timers
     vi.useRealTimers();
@@ -251,10 +271,10 @@ describe("createRewindableElement", () => {
   
   it("should undo and redo from keyboard events", () => {
     const history = [
-      { content: "He" },
-      { content: "Hell" },
-      { content: "Hello" },
-      { content: "Hello World" },
+      { content: "He", top: 0, left: 0, selected: false, children: new Map()  },
+      { content: "Hell", top: 0, left: 0, selected: false, children: new Map()  },
+      { content: "Hello", top: 0, left: 0, selected: false, children: new Map()  },
+      { content: "Hello World", top: 0, left: 0, selected: false, children: new Map()  },
     ];
     
     const index = 3;
@@ -274,36 +294,36 @@ describe("createRewindableElement", () => {
     const redoSpy = vi.spyOn(component, "redo");
 
     // Verify that the initial state is correct
-    expect(component.history.length).toBe(4);
-    expect(component.history[3].content).toBe("Hello World");
-    expect(component.index).toBe(3);
+    expect(component.rewindHistory.length).toBe(4);
+    expect(component.rewindHistory[3].content).toBe("Hello World");
+    expect(component.rewindIndex).toBe(3);
     
     // Verify that the undo event works
     component.dispatchEvent(undoEvent());
     expect(undoSpy).toHaveBeenCalled();
-    expect(component.history[2].content).toBe("Hello");
-    expect(component.index).toBe(2);
+    expect(component.rewindHistory[2].content).toBe("Hello");
+    expect(component.rewindIndex).toBe(2);
     
     // Verify that the redo event works
     component.dispatchEvent(redoEvent());
     expect(redoSpy).toHaveBeenCalled();
-    expect(component.history[3].content).toBe("Hello World");
-    expect(component.index).toBe(3);
+    expect(component.rewindHistory[3].content).toBe("Hello World");
+    expect(component.rewindIndex).toBe(3);
     
     // Verify that we can undo to the end
     component.dispatchEvent(undoEvent());
     component.dispatchEvent(undoEvent());
     component.dispatchEvent(undoEvent());
     expect(undoSpy).toHaveBeenCalledTimes(4);
-    expect(component.history[0].content).toBe("He");
-    expect(component.index).toBe(0);
+    expect(component.rewindHistory[0].content).toBe("He");
+    expect(component.rewindIndex).toBe(0);
     
     // Verify that we can redo to the end
     component.dispatchEvent(redoEvent());
     component.dispatchEvent(redoEvent());
     component.dispatchEvent(redoEvent());
     expect(redoSpy).toHaveBeenCalledTimes(4);
-    expect(component.history[3].content).toBe("Hello World");
-    expect(component.index).toBe(3);
+    expect(component.rewindHistory[3].content).toBe("Hello World");
+    expect(component.rewindIndex).toBe(3);
   })
 });
