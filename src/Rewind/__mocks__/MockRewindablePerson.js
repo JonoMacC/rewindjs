@@ -12,21 +12,21 @@ export class MockRewindablePerson {
     this.#index = 0;
   }
 
-  set state(newState) {
+  set rewindState(newState) {
     this.#state = newState;
     this.#history.push(newState);
     this.#index = this.#history.length - 1;
   }
 
-  get state() {
+  get rewindState() {
     return this.#state;
   }
 
-  get history() {
+  get rewindHistory() {
     return this.#history;
   }
 
-  get index() {
+  get rewindIndex() {
     return this.#index;
   }
 }

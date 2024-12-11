@@ -75,7 +75,7 @@ describe('CompositeStateManager', () => {
 
     it('should reflect changes in target and children', () => {
       target.name = 'Jane';
-      child1.state = { name: 'Cara', age: 3 };
+      child1.rewindState = { name: 'Cara', age: 3 };
 
       const state = compositeStateManager.state;
 
@@ -116,7 +116,7 @@ describe('CompositeStateManager', () => {
       const addedChild = compositeStateManager.children.get('3');
 
       expect(addedChild).toBe(child3);
-      expect(addedChild.state).toEqual({ name: 'Dakota', age: 0 });
+      expect(addedChild.rewindState).toEqual({ name: 'Dakota', age: 0 });
     });
 
     it('should remove a child', () => {

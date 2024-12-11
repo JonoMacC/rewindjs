@@ -128,8 +128,8 @@ describe('ChildStateManager', () => {
 
       const restoredChild = stateManager.children.get('1');
       expect(restoredChild).toBeInstanceOf(MockRewindable);
-      expect(restoredChild.history).toEqual([{value: 10}, {value: 20}]);
-      expect(restoredChild.index).toBe(1);
+      expect(restoredChild.rewindHistory).toEqual([{value: 10}, {value: 20}]);
+      expect(restoredChild.rewindIndex).toBe(1);
     });
 
     it('should remove children not in the new state', () => {

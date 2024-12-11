@@ -13,25 +13,25 @@ export class MockRewindableCounter {
     this.#index = args[0].index;
   }
 
-  set state(newState) {
+  set rewindState(newState) {
     this.#state = newState;
     this.#history.push(newState);
     this.#index = this.#history.length - 1;
   }
 
-  get state() {
+  get rewindState() {
     return this.#state;
   }
 
-  set history(newHistory) {
+  set rewindHistory(newHistory) {
     this.#history = newHistory;
   }
 
-  get history() {
+  get rewindHistory() {
     return this.#history;
   }
 
-  get index() {
+  get rewindIndex() {
     return this.#index;
   }
 
