@@ -348,7 +348,7 @@ describe("createRewindableElement", () => {
     });
   });
   describe("Composite Rewind Functionality", () => {
-    let RewindableElement, component;
+    let RewindableElement, AltRewindableElement, component;
 
     beforeEach(() => {
       RewindableElement = createRewindableElement(BaseClass, {
@@ -358,7 +358,69 @@ describe("createRewindableElement", () => {
           content: 400,
         }
       });
+      AltRewindableElement = createRewindableElement(AltClass, {
+        observe: ["value"],
+      });
       component = new RewindableElement();
+    });
+
+    it("should handle initial children", () => {
+      const child = new RewindableElement();
+      component = new RewindableElement({
+        children: new Map([["1", child]])
+      });
+
+      // Verify that the child was added to the state
+      expect(component.rewindChildren.size).toBe(1);
+      expect(component.rewindChildren.get("1")).toStrictEqual(child);
+
+      // Verify that the child was added to the composite
+      expect(component.children.length).toBe(1);
+      expect(component.contains(child)).toBe(true);
+    });
+
+    it("should handle multiple initial children", () => {
+      const child1 = new RewindableElement();
+      const child2 = new RewindableElement();
+      component = new RewindableElement({
+        children: new Map([["1", child1], ["2", child2]])
+      });
+
+      // Verify that the children were added to the state
+      expect(component.rewindChildren.size).toBe(2);
+      expect(component.rewindChildren.get("1")).toStrictEqual(child1);
+      expect(component.rewindChildren.get("2")).toStrictEqual(child2);
+
+      // Verify that the children were added to the composite
+      expect(component.children.length).toBe(2);
+      expect(component.contains(child1)).toBe(true);
+      expect(component.contains(child2)).toBe(true);
+    });
+
+    it("should record baseline after initial children are ready", () => {
+      const child1 = new AltRewindableElement();
+      const child2 = new AltRewindableElement();
+      component = new RewindableElement({
+        children: new Map([["1", child1], ["2", child2]])
+      });
+
+      // Verify that only one state in history was recorded
+      expect(component.rewindHistory.length).toBe(1);
+
+      // Verify that the children are in history
+      expect(component.rewindHistory[0].children.size).toBe(2);
+
+      // Verify that each child has an initial history
+      const child1History = component.rewindHistory[0].children.get("1").history;
+      const child2History = component.rewindHistory[0].children.get("2").history;
+      expect(child1History).toBeTruthy();
+      expect(child2History).toBeTruthy();
+      expect(child1History.length).toBe(1);
+      expect(child2History.length).toBe(1);
+
+      // Verify that each child was correctly initialized
+      expect(child1History[0].value).toBe(0);
+      expect(child2History[0].value).toBe(0);
     });
 
     it("should handle adding children", () => {
@@ -421,7 +483,6 @@ describe("createRewindableElement", () => {
       expect(component.rewindState.children.get("2").type).toBe(key2);
     });
   });
-
   describe("Child State Restoration", () => {
     let RewindableElement, component, child;
 
