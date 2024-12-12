@@ -7,8 +7,6 @@ import cel from "../lib/celerity/cel.js";
 // Type definitions
 import './__types__/types.js';
 
-// TODO: Add support for initial children
-
 /**
  * Creates a class that adds undo/redo functionality to a target class. Properties in the `observe` option
  * are automatically recorded when they are changed. For changing multiple properties at once that should be recorded
@@ -17,7 +15,7 @@ import './__types__/types.js';
  *
  * @param {typeof Object} TargetClass - The target class
  * @param {RewindOptions} rewindOptions - Options for the Rewindable class
- * @returns {typeof TargetClass} A new class that extends TargetClass with undo/redo functionality
+ * @returns {typeof Rewindable} A new Rewindable class with undo/redo functionality
  *
  * @example
  * class Counter {
@@ -135,6 +133,18 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#historyManager.history = newHistory;
     }
 
+    // Protected Methods
+
+    _getBaselineRecorded() {
+      return this.#baselineRecorded;
+    }
+
+    _setBaselineRecorded() {
+      this.#baselineRecorded = true;
+    }
+
+    // Private methods
+
     /**
      * Returns the last (most recent) history for a child found in the parent undo/redo history
      * @param id - The child identifier
@@ -144,6 +154,10 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       const lastHistory = this.rewindHistory.findLast(history => history.children.has(id));
       return lastHistory ? lastHistory.children.get(id).history : null;
     }
+
+    // Public API methods
+
+    // Setup
 
     /**
      * Sets up auto-recording
@@ -175,37 +189,6 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     }
 
     /**
-     * Adds a rewindable child
-     * @param {string} id - Unique identifier for the child
-     * @param {Object} child - Child to add
-     * @returns {Rewindable} this instance for chaining
-     */
-    addRewindable(id, child) {
-      this.#stateManager.addChild(id, child);
-      this.record();
-      return this;
-    }
-
-    /**
-     * Removes a rewindable child
-     * @param {string} id - Child identifier to remove
-     * @returns {Rewindable} this instance for chaining
-     */
-    removeRewindable(id) {
-      // Record the current state
-      // This will capture the state of the child before it is removed
-      // If the child state was already recorded, this will be a no-op
-      this.record();
-
-      // Remove the child
-      this.#stateManager.removeChild(id);
-
-      // Record the new state now that the child has been removed
-      this.record();
-      return this;
-    }
-
-    /**
      * Records the current state once (initial recording)
      */
     recordBaseline() {
@@ -215,6 +198,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.record();
       this.#baselineRecorded = true;
     }
+
+    // Basic Rewind
 
     /**
      * Records current state in history
@@ -230,6 +215,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     /**
      * Coalesces changes by suspending recording, running the callback,
      * and recording once after the callback is completed
+     * @param {Function} fn - Callback to run
      * @returns {Rewindable} this instance for chaining
      */
     coalesce(fn) {
@@ -293,8 +279,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     }
 
     /**
-     * Suspends recording.
-     * @return {Rewindable} this instance for chaining.
+     * Suspends recording
+     * @return {Rewindable} this instance for chaining
      */
     suspend() {
       this.#recording = false;
@@ -302,11 +288,44 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     }
 
     /**
-     * Resumes recording.
-     * @returns {Rewindable} this instance for chaining.
+     * Resumes recording
+     * @returns {Rewindable} this instance for chaining
      */
     resume() {
       this.#recording = true;
+      return this;
+    }
+
+    // Child Management
+
+    /**
+     * Adds a rewindable child
+     * @param {string} id - Unique identifier for the child
+     * @param {Rewindable} child - Child to add
+     * @returns {Rewindable} this instance for chaining
+     */
+    addRewindable(id, child) {
+      this.#stateManager.addChild(id, child);
+      this.record();
+      return this;
+    }
+
+    /**
+     * Removes a rewindable child
+     * @param {string} id - Child identifier to remove
+     * @returns {Rewindable} this instance for chaining
+     */
+    removeRewindable(id) {
+      // Record the current state
+      // This will capture the state of the child before it is removed
+      // If the child state was already recorded, this will be a no-op
+      this.record();
+
+      // Remove the child
+      this.#stateManager.removeChild(id);
+
+      // Record the new state now that the child has been removed
+      this.record();
       return this;
     }
   }

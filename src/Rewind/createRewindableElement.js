@@ -7,6 +7,11 @@ import cel from "../lib/celerity/cel.js";
 // Type definitions
 import './__types__/types.js';
 
+const scheduleNextFrame =
+  typeof requestAnimationFrame !== "undefined"
+    ? requestAnimationFrame
+    : (cb) => setTimeout(cb, 0);
+
 // TODO: Ensure recordBaseline waits for any children to be ready before recording
 
 /**
@@ -66,15 +71,10 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      */
     constructor(...args) {
       super(...args);
-
-      /**
-       * @type {RewindConfig|{}}
-       */
-      const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
-
       const options = this.constructor.rewindOptions;
+      const children = args[0]?.children || new Map();
 
-      this.#setupPropertyHandlers(options);
+      this.#setupPropertyHandlers(options.observe, options.debounce);
 
       // Create the core rewindable instance
       const RewindableClass = createRewindable(TargetClass, {
@@ -84,29 +84,55 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         restoreCallback: (id, child) => this.addRewindable(id, child)
       });
 
+      // Override recordBaseline method in the Rewindable to handle scenario within the DOM
       RewindableClass.prototype.recordBaseline = function() {
-        // Record initial state after DOM is ready
-        if (document.readyState === 'loading') {
-          window.addEventListener('DOMContentLoaded', () => this.record(), {once: true});
-        } else {
-          this.record();
+        if (this._getBaselineRecorded()) return;
+
+        const initialize = (attempts = 0) => {
+          // Check if all children have completed their initial recording
+          const childrenReady = Array.from(this.rewindChildren
+            .values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            console.info('All children ready - Recording parent state');
+            this.record();
+            this._setBaselineRecorded();
+          } else if (attempts < 10) {  // Prevent infinite loop
+            // Wait a bit and try again
+            scheduleNextFrame(() => initialize(attempts + 1));
+          } else {
+            console.warn('Could not initialize all children after multiple attempts');
+            this.record();
+            this._setBaselineRecorded();
+          }
         }
 
-        // Reassign method so that it can only be called once
-        this.recordBaseline = () => {};
+        // Handle different DOM readiness scenarios
+        if (document.readyState === 'loading') {
+          window.addEventListener('DOMContentLoaded', initialize);
+        } else {
+          initialize();
+        }
       }
 
       this.#rewindable = new RewindableClass(...args);
 
-      // Defer intercept to ensure the RewindableElement is fully initialized
+      // Defer intercept to ensure the Rewindable is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
+
+      this.#setupChildren(children);
     }
 
     // Private setup methods
 
-    #setupPropertyHandlers(options) {
-      const {observe = [], debounce = {}} = options;
-
+    /**
+     * Defines the callback to invoke when a property value changes. If a debounce time is defined for the property,
+     * the callback is a debounced record method. Otherwise, the callback is the record method.
+     * @param {string[]} observe - Properties to observe
+     * @param {Object<string, number>} [debounce] - Debounce times for properties
+     */
+    #setupPropertyHandlers(observe, debounce= {}) {
       for (const prop of observe) {
         if (prop in debounce) {
           const delay = debounce[prop];
@@ -120,9 +146,11 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       }
     }
 
-    #setupKeyboardHandlers(options) {
-      const {keys} = options;
-
+    /**
+     * Sets up event listeners for keyboard shortcuts defined as undo/redo keys
+     * @param {UndoKeys} keys
+     */
+    #setupKeyboardHandlers(keys) {
       this.#eventHandler = new EventHandler(this, keys);
 
       this.addEventListener('undo', (event) => {
@@ -136,11 +164,30 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       });
     }
 
+    /**
+     * Focuses the element if it is not focus-in
+     */
     #refocus() {
       if (typeof this.focus === 'function'
         && typeof document.activeElement === 'object'
         && !this.contains(document.activeElement)) {
         this.focus();
+      }
+    }
+
+    /**
+     * Adds any initial rewindable children to the element
+     * @param {Map<string, RewindableElement>} children - Collection of rewindable children
+     */
+    #setupChildren(children) {
+      if (children) {
+        for (const [id, child] of children.entries()) {
+          // Get the position from the state
+          const {position} = this.rewindState.children.get(id);
+
+          // Add the child to the element in the correct position
+          this.insertBefore(child, this.children[position]);
+        }
       }
     }
 
@@ -154,7 +201,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     /**
-     * @param {Object} newState - State to restore
+     * @param {Object} newState - State to set
      */
     set rewindState(newState) {
       this.#rewindable.rewindState = newState;
@@ -168,6 +215,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       return this.#rewindable.rewindHistory;
     }
 
+    /**
+     * @param {Object[]} newHistory - History to set
+     */
     set rewindHistory(newHistory) {
       this.#rewindable.rewindHistory = newHistory;
     }
@@ -181,72 +231,119 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       const options = this.constructor.rewindOptions;
 
       // Setup keyboard shortcuts for undo and redo
-      this.#setupKeyboardHandlers(options);
+      this.#setupKeyboardHandlers(options.keys);
     }
 
     // Public API methods
 
     // Basic Rewind
 
+    /**
+     * Records the current state in history
+     * @returns {RewindableElement} this instance for chaining
+     */
     record() {
       this.#rewindable.record();
       return this;
     }
 
-    suspend() {
-      this.#rewindable.suspend();
-      return this;
-    }
-
-    resume() {
-      this.#rewindable.resume();
-      return this;
-    }
-
+    /**
+     * Coalesces changes by suspending recording, running the callback,
+     * and recording once after the callback is completed
+     * @param {Function} fn - Callback to run
+     * @returns {RewindableElement} this instance for chaining
+     */
     coalesce(fn) {
       this.#rewindable.coalesce(fn);
       return this;
     }
 
+    /**
+     * Travels to the given index
+     * @param {number} index - Index to travel to
+     * @returns {RewindableElement} this instance for chaining
+     */
     travel(index) {
       this.#rewindable.travel(index);
       return this;
     }
 
+    /**
+     * Drops the state at the given index
+     * @param {number} index - Index to drop
+     * @returns {RewindableElement} this instance for chaining
+     */
     drop(index) {
       this.#rewindable.drop(index);
       return this;
     }
 
+    /**
+     * Undoes the last recorded state
+     * @returns {RewindableElement} this instance for chaining
+     */
     undo() {
       this.#rewindable.undo();
       this.#refocus();
       return this;
     }
 
+    /**
+     * Redoes the last undone state
+     * @returns {RewindableElement} this instance for chaining
+     */
     redo() {
       this.#rewindable.redo();
       this.#refocus();
       return this;
     }
 
+    /**
+     * Suspends recording
+     * @returns {RewindableElement} this instance for chaining
+     */
+    suspend() {
+      this.#rewindable.suspend();
+      return this;
+    }
+
+    /**
+     * Resumes recording
+     * @returns {RewindableElement} this instance for chaining
+     */
+    resume() {
+      this.#rewindable.resume();
+      return this;
+    }
+
     // Child Management
 
+    /**
+     * Adds a rewindable child
+     * @param {string} id - Unique identifier for the child
+     * @param {RewindableElement} child - Child to add
+     * @returns {RewindableElement} this instance for chaining
+     */
     addRewindable(id, child) {
       // Add the child to the state
       this.#rewindable.addRewindable(id, child);
 
       // Get the position from the state
-      const {position} = this.#rewindable.rewindChildren.get(id);
+      const {position} = this.rewindState.children.get(id);
 
-      // Add the child to the DOM in the correct position
+      // Add the child to the element in the correct position
       this.insertBefore(child, this.children[position]);
       return this;
     }
 
+    /**
+     * Removes a rewindable child
+     * @param {string} id - Child identifier to remove
+     * @returns {RewindableElement} this instance for chaining
+     */
     removeRewindable(id) {
       // Get the child
-      const child = this.#rewindable.rewindChildren.get(id);
+      const child = this.rewindChildren.get(id);
 
       // Determine if child is focused
       const focused = document.activeElement === child;
