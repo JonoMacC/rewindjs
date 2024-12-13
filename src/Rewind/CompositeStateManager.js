@@ -27,8 +27,7 @@ export class CompositeStateManager {
    * @returns {Object}
    */
   get state() {
-    const newState = {...this.#stateManager.state, children: this.#childStateManager.state};
-    return newState;
+    return {...this.#stateManager.state, children: this.#childStateManager.state};
   }
 
   /**
