@@ -34,9 +34,7 @@ gx-tile {
   }
 
   &:hover {
-    outline-color: var(--active);
-    outline-width: 1px;
-    outline-style: solid;
+    outline: var(--active) solid 1px;
     outline-offset: -1px;
   }
 
@@ -45,9 +43,7 @@ gx-tile {
     background-color: color-mix(in hsl,
         var(--surface-100),
         transparent 20%);
-    outline-color: var(--active);
-    outline-width: 2px;
-    outline-style: solid;
+    outline: var(--active) solid 2px;
     outline-offset: 0;
     box-shadow: 0 0 0 6px color-mix(in hsl,
         var(--active),
