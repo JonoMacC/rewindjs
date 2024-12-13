@@ -70,7 +70,6 @@ import './__types__/types.js';
 function rewindFromClass(BaseClass, options = {}) {
   // Check if BaseClass is type of HTMLElement
   const isHTMLElement = BaseClass.prototype instanceof HTMLElement;
-  console.log('Is HTMLElement:', isHTMLElement);
   return isHTMLElement ? createRewindableElement(BaseClass, options) : createRewindable(BaseClass, options);
 }
 
