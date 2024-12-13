@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Window } from "happy-dom";
-import rewind from "../rw.js";
+import rewind from "../rewind.js";
 
 // Set up a DOM environment
 const window = new Window();
@@ -34,7 +34,7 @@ RewindableCheckbox = rewind(checkboxTemplate, {
 customElements.define("rw-text-input", RewindableText);
 customElements.define("rw-checkbox", RewindableCheckbox);
 
-describe("rewind", () => {
+describe("rewind HTML Inputs", () => {
   let rwTextInput, rwCheckbox;
 
   beforeEach(() => {
