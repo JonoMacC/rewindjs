@@ -1,5 +1,5 @@
-import {HistoryManager} from "./HistoryManager";
-import {CompositeStateManager} from "./CompositeStateManager";
+import {HistoryManager} from "./HistoryManager.js";
+import {CompositeStateManager} from "./CompositeStateManager.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";

@@ -1,5 +1,5 @@
-import {StateManager} from "./StateManager";
-import {ChildStateManager} from "./ChildStateManager";
+import {StateManager} from "./StateManager.js";
+import {ChildStateManager} from "./ChildStateManager.js";
 
 export class CompositeStateManager {
   #stateManager;
