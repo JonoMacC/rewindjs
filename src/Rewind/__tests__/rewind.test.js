@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { JSDOM } from "jsdom";
-import { rewind } from "../rewind.js";
+import rewind from "../rewind.js";
 
 // Set up a DOM environment
 const { window } = new JSDOM();
@@ -8,7 +8,7 @@ global.window = window;
 global.document = window.document;
 global.HTMLElement = window.HTMLElement;
 
-class TestComponent {
+class BaseClass {
   #content = "";
   #left = 0;
   #top = 0;
@@ -57,7 +57,7 @@ describe("Rewind", () => {
   let component;
 
   beforeEach(() => {
-    RewindTestComponent = rewind(TestComponent, {
+    RewindTestComponent = rewind(BaseClass, {
       observe: ["content", "top", "left", "selected"],
       coalesce: ["setPosition"],
       debounce: {
@@ -74,6 +74,7 @@ describe("Rewind", () => {
       "top",
       "left",
       "selected",
+      "children",
     ]);
   });
 
@@ -102,7 +103,7 @@ describe("Rewind", () => {
     component.content = "Hello";
     component.content = "Hello World";
     await vi.runAllTimersAsync();
-    expect(component.rewindHistory.length).toBe(2);
+    expect(component.rewindHistory.length).toBe(3);
     vi.useRealTimers();
   });
 
@@ -138,18 +139,19 @@ describe("Rewind", () => {
 
   it("should handle initial history and index", () => {
     const history = [
-      { content: "First", top: 0, left: 0, selected: false },
-      { content: "Second", top: 10, left: 10, selected: true },
-      { content: "Third", top: 20, left: 20, selected: false },
+      { content: "First", top: 0, left: 0, selected: false, children: new Map() },
+      { content: "Second", top: 10, left: 10, selected: true, children: new Map() },
+      { content: "Third", top: 20, left: 20, selected: false, children: new Map() },
     ];
     const index = 1;
 
-    RewindTestComponent = rewind(TestComponent, {
+    RewindTestComponent = rewind(BaseClass, {
       observe: ["content", "top", "left", "selected"],
+    });
+    component = new RewindTestComponent({
       history,
       index,
     });
-    component = new RewindTestComponent();
 
     expect(component.rewindHistory).toEqual(history);
 
@@ -194,12 +196,13 @@ describe("Rewind", () => {
     ];
     const index = 2;
 
-    RewindTestComponent = rewind(TestComponent, {
+    RewindTestComponent = rewind(BaseClass, {
       observe: ["content"],
+    });
+    component = new RewindTestComponent({
       history,
       index,
     });
-    component = new RewindTestComponent();
 
     // Undo to initial state and redo to the end
     component.undo().undo().redo().redo();

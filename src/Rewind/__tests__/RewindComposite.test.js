@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { JSDOM } from "jsdom";
 import { RewindComposite } from "../RewindComposite.js";
-import { rewind } from "../rewind.js";
+import { rewind } from "../old_rewind.js";
 import { MockElement } from "../__mocks__/MockElement.js";
 
 // Set up a DOM environment
