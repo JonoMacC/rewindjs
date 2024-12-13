@@ -172,5 +172,3 @@ export class HistoryManager {
     return this.travel(this.index + 1);
   }
 }
-
-export default HistoryManager;
