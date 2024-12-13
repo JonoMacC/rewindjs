@@ -1,4 +1,4 @@
-import { rewind } from "../Rewind/rewind.js";
+import rewind from "../Rewind/rewind.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";

@@ -1,4 +1,4 @@
-import { rewind } from "./rewind.js";
+import rewind from "./rewind.js";
 
 const checkbox = document.createElement("input");
 checkbox.type = "checkbox";
