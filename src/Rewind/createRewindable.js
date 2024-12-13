@@ -55,7 +55,10 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
       const options = this.constructor.rewindOptions;
 
-      this.#target = new this.constructor.targetClass(...args.slice(1));
+      const targetClass = this.constructor.targetClass;
+      this.#target = targetClass.prototype instanceof HTMLElement
+        ? document.createElement(targetClass.tagName)
+        : new targetClass(...args.slice(1));
 
       this.#historyManager = new HistoryManager(options.model);
       this.#stateManager = new CompositeStateManager(options.host || this.#target, {
