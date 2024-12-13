@@ -3,8 +3,8 @@ import rewind from "../Rewind/rewind.js";
 // Utilities
 import cel from "../lib/celerity/cel.js";
 
+// Define the base tile class
 class BaseTile extends HTMLElement {
-  #keys = new Set(["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"]);
   #keyMap = {
     submitKey: ["Enter"],
     leftKey: ["ArrowLeft"],
@@ -12,11 +12,13 @@ class BaseTile extends HTMLElement {
     rightKey: ["ArrowRight"],
     downKey: ["ArrowDown"],
   };
+  #keys;
   #alphaNumKeys = /^[0-9a-zA-Z]$/;
   constructor() {
     super();
     this.tabIndex = 0;
     this.id = cel.randomId();
+    this.#keys = new Set(Object.values(this.#keyMap).flat());
 
     // Initialize properties with attribute values or defaults
     this.top =
@@ -114,10 +116,12 @@ class BaseTile extends HTMLElement {
   }
 }
 
+// Create the rewindable tile class (Tile + Undo/Redo)
 const Tile = rewind(BaseTile, {
   observe: ["top", "left", "label"],
 });
 
+// Define the rewindable tile as a custom element
 customElements.define("gx-tile", Tile);
 
 export default Tile;
