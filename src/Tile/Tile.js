@@ -12,6 +12,7 @@ class BaseTile extends HTMLElement {
     rightKey: ["ArrowRight"],
     downKey: ["ArrowDown"],
   };
+  #alphaNumKeys = /^[0-9a-zA-Z]$/;
   constructor() {
     super();
     this.tabIndex = 0;
@@ -43,6 +44,9 @@ class BaseTile extends HTMLElement {
       rightKey: () => {
         this.left += 10;
       },
+      alphaNumKey: (key) => {
+        this.label = key ;
+      },
     };
   }
 
@@ -71,6 +75,13 @@ class BaseTile extends HTMLElement {
   }
 
   #handleKeydown(event) {
+    // Handle keys that will trigger relabeling a tile
+    if (this.#alphaNumKeys.test(event.key)
+      && !(event.ctrlKey || event.metaKey)) {
+      this.keyHandlers.alphaNumKey(event.key);
+      return;
+    }
+
     const key = cel.keyCombo(event);
     if (!this.#keys.has(key)) return;
 
