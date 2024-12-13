@@ -12,8 +12,6 @@ const scheduleNextFrame =
     ? requestAnimationFrame
     : (cb) => setTimeout(cb, 0);
 
-// TODO: Ensure recordBaseline waits for any children to be ready before recording
-
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are
  * automatically recorded when changed, and methods in `coalesce` result in a single recording each time they are
@@ -226,12 +224,19 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       return this.#rewindable.rewindChildren;
     }
 
+    // Lifecycle
+
     connectedCallback() {
       super.connectedCallback?.();
       const options = this.constructor.rewindOptions;
 
       // Setup keyboard shortcuts for undo and redo
       this.#setupKeyboardHandlers(options.keys);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback?.();
+      this.#eventHandler?.destroy();
     }
 
     // Public API methods
@@ -365,12 +370,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       }
 
       return this;
-    }
-
-    // Cleanup
-
-    destroy() {
-      this.#eventHandler?.destroy();
     }
   }
 }
