@@ -10,6 +10,7 @@ export class ChildStateManager {
   /**
    * Manages the state of a collection of rewindable children
    * @param {Map<string, Rewindable>} children - Collection of rewindable children to manage
+   * @param {Function} restoreCallback - Callback to invoke when restoring a rewindable child
    */
   constructor(children = new Map(), restoreCallback = null) {
     this.#children = children;
