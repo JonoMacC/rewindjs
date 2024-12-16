@@ -417,11 +417,28 @@ describe("createRewindable", () => {
         expect(composite.rewindChildren.get("2")).toStrictEqual(child2);
       });
 
-      it("should record baseline after initial children are ready", () => {
+      it("should record baseline after initial children are ready", async () => {
         const child1 = new Rewindable();
         const child2 = new Rewindable();
         composite = new RewindableComposite({
           children: new Map([["1", child1], ["2", child2]])
+        });
+
+        // Create a promise that resolves when children are initialized
+        await new Promise(resolve => {
+          const checkInitialization = () => {
+            const childrenReady = Array.from(composite.rewindChildren.values())
+              .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+            if (childrenReady) {
+              resolve();
+            } else {
+              // Schedule another check
+              setTimeout(checkInitialization, 10);
+            }
+          };
+
+          checkInitialization();
         });
 
         // Verify that only one state was recorded to history
