@@ -79,10 +79,12 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       }
 
       // Handle initial state recording
-      if (this.rewindHistory.length !== 0) {
-        this.#baselineRecorded = true;
-      }
-      this.recordBaseline();
+      Promise.resolve().then(() => {
+        if (this.rewindHistory.length !== 0) {
+          this.#baselineRecorded = true;
+        }
+        this.recordBaseline();
+      });
 
       // Set up auto-recording if host is not provided
       if (!options.host) {
@@ -207,9 +209,17 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     recordBaseline() {
       if (this.#baselineRecorded) return;
 
-      console.log('Recording baseline with state:', this.rewindState);
-      this.record();
-      this.#baselineRecorded = true;
+      // Check if all children have completed their initial recording
+      const childrenReady = Array.from(this.rewindChildren
+        .values())
+        .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+      if (childrenReady) {
+        this.record();
+        this.#baselineRecorded = true;
+      } else {
+        Promise.resolve().then(() => this.recordBaseline());
+      }
     }
 
     // Basic Rewind
