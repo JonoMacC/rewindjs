@@ -83,7 +83,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         if (this.rewindHistory.length !== 0) {
           this.#baselineRecorded = true;
         }
-        this.recordBaseline();
+        this.#recordBaseline();
       });
 
       // Set up auto-recording if host is not provided
@@ -170,6 +170,25 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       return lastHistory ? lastHistory.children.get(id).history : null;
     }
 
+    /**
+     * Records the current state once (initial recording)
+     */
+    #recordBaseline() {
+      if (this.#baselineRecorded) return;
+
+      // Check if all children have completed their initial recording
+      const childrenReady = Array.from(this.rewindChildren
+        .values())
+        .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+      if (childrenReady) {
+        this.record();
+        this.#baselineRecorded = true;
+      } else {
+        Promise.resolve().then(() => this.#recordBaseline());
+      }
+    }
+
     // Public API methods
 
     // Setup
@@ -201,25 +220,6 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.intercept = () => {
         console.warn('Intercept has already been set up. Skipping.');
       };
-    }
-
-    /**
-     * Records the current state once (initial recording)
-     */
-    recordBaseline() {
-      if (this.#baselineRecorded) return;
-
-      // Check if all children have completed their initial recording
-      const childrenReady = Array.from(this.rewindChildren
-        .values())
-        .every(child => child.rewindHistory && child.rewindHistory.length > 0);
-
-      if (childrenReady) {
-        this.record();
-        this.#baselineRecorded = true;
-      } else {
-        Promise.resolve().then(() => this.recordBaseline());
-      }
     }
 
     // Basic Rewind
