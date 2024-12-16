@@ -156,16 +156,6 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#historyManager.history = newHistory;
     }
 
-    // Protected Methods
-
-    _getBaselineRecorded() {
-      return this.#baselineRecorded;
-    }
-
-    _setBaselineRecorded() {
-      this.#baselineRecorded = true;
-    }
-
     // Private methods
 
     /**
