@@ -211,6 +211,7 @@ label {
 
     & h2 {
         font-size: 0.8rem;
+        margin-bottom: 1.2em;
     }
 
     & h2:first-of-type {
