@@ -316,6 +316,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @returns {RewindableElement} this instance for chaining
      */
     addRewindable(id, child) {
+      // Set the child identifier
+      child.id = id;
+
       // Add the child to the state
       this.#rewindable.addRewindable(id, child);
 
