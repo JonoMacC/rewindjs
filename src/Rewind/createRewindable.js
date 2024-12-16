@@ -79,7 +79,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       }
 
       // Handle initial state recording
-      if (config.history && this.rewindHistory.length !== 0) {
+      if (this.rewindHistory.length !== 0) {
         this.#baselineRecorded = true;
       }
       this.recordBaseline();
