@@ -66,6 +66,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
           observe: options.observe,
           children: config.children || new Map(),
           restoreCallback: options.restoreCallback
+          restoreCallback: options.restoreCallback,
+          destroyCallback: options.destroyCallback
         });
 
       // Setup property forwarding

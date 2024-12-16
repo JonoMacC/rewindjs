@@ -13,13 +13,18 @@ export class CompositeStateManager {
    * @param {string[]} options.observe - Properties to observe on the target
    * @param {RewindCollection} options.children - Collection of rewindable children
    * @param {Function} options.restoreCallback - Callback to invoke when restoring a rewindable child
+   * @param {Function} options.destroyCallback - Callback to invoke when reversing a rewindable child restore
    */
   constructor(target, options) {
     // Manages the state of the target object
     this.#stateManager = new StateManager(target, options.observe);
 
     // Manages the state of the children
-    this.#childStateManager = new ChildStateManager(options.children, options.restoreCallback);
+    this.#childStateManager = new ChildStateManager(
+      options.children,
+      options.restoreCallback,
+      options.destroyCallback
+    );
   }
 
   /**
@@ -35,7 +40,6 @@ export class CompositeStateManager {
    * @param {Object} newState - The new state to set.
    */
   set state(newState) {
-
     // Separate children from the rest of the state
     const children = newState.children || new Map();
     const rest = {...newState};

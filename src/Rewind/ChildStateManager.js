@@ -5,16 +5,19 @@ export class ChildStateManager {
   #children;
   #childTypes = new Map();
   #restoreCallback;
+  #destroyCallback;
   #childPositions = new Map();
 
   /**
    * Manages the state of a collection of rewindable children
    * @param {RewindCollection} children - Collection of rewindable children to manage
    * @param {Function} restoreCallback - Callback to invoke when restoring a rewindable child
+   * @param {Function} destroyCallback - Callback to invoke when destroying a rewindable child
    */
-  constructor(children = new Map(), restoreCallback = null) {
+  constructor(children = new Map(), restoreCallback = null, destroyCallback = null) {
     this.#children = children;
     this.#restoreCallback = restoreCallback;
+    this.#destroyCallback = destroyCallback;
 
     // Register child types
     this.#children.forEach(child => this.registerChildType(child.constructor));
@@ -115,7 +118,12 @@ export class ChildStateManager {
     // Remove children that are not in newState
     for (const id of this.#children.keys()) {
       if (!newState.has(id)) {
-        this.removeChild(id);
+        // Remove the child
+        if (this.#destroyCallback) {
+          this.#destroyCallback(id);
+        } else {
+          this.removeChild(id);
+        }
       }
     }
 

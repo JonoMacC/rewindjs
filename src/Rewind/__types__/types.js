@@ -30,6 +30,7 @@
  * @property {Map} [propertyHandlers=Map()] - Functions to execute on a property change
  * @property {Object} [host] - Target to intercept for auto-recording
  * @property {Function} [restoreCallback=null] - Function to call when restoring a rewindable child
+ * @property {Function} [destroyCallback=null] - Function to call when destroying a rewindable child
  */
 
 /**
