@@ -120,18 +120,37 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#stateManager.state = { ...newState, children };
     }
 
+    /**
+     * @returns {RewindCollection} Collection of rewindable children
+     */
     get rewindChildren() {
       return this.#stateManager.children;
     }
 
+    /**
+     * @param {RewindCollection} children - Collection of rewindable children
+     */
+    set rewindChildren(children) {
+      this.#stateManager.children = children;
+    }
+
+    /**
+     * @returns {number} Current history index
+     */
     get rewindIndex() {
       return this.#historyManager.index;
     }
 
+    /**
+     * @returns {Object[]} History of recorded states
+     */
     get rewindHistory() {
       return this.#historyManager.history;
     }
 
+    /**
+     * @param {Object[]} newHistory - History of states
+     */
     set rewindHistory(newHistory) {
       this.#historyManager.history = newHistory;
     }

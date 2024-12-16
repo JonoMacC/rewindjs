@@ -9,7 +9,7 @@ export class ChildStateManager {
 
   /**
    * Manages the state of a collection of rewindable children
-   * @param {Map<string, Rewindable>} children - Collection of rewindable children to manage
+   * @param {RewindCollection} children - Collection of rewindable children to manage
    * @param {Function} restoreCallback - Callback to invoke when restoring a rewindable child
    */
   constructor(children = new Map(), restoreCallback = null) {
@@ -89,7 +89,7 @@ export class ChildStateManager {
   }
 
   /**
-   * @returns {Object} Snapshot of all children's states
+   * @returns {RewindChildrenState} Snapshot of all children's states
    */
   get state() {
     return new Map(
@@ -109,7 +109,7 @@ export class ChildStateManager {
   }
 
   /**
-   * @param {Object} newState - Snapshot to restore
+   * @param {RewindChildrenState} newState - Snapshot to restore
    */
   set state(newState) {
     // Remove children that are not in newState
@@ -149,6 +149,9 @@ export class ChildStateManager {
     }
   }
 
+  /**
+   * @returns {RewindCollection} Collection of rewindable children
+   */
   get children() {
     return this.#children;
   }

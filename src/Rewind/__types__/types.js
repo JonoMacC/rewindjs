@@ -38,3 +38,19 @@
  * @property {Map<string, Rewindable>} [children=new Map()] - Initial rewindable children
  * @property {number} [index=undefined] - Initial index
  */
+
+/**
+ * @typedef {Object} RewindChildState
+ * @property {string} type - Type of rewindable child
+ * @property {Object[]} history - History of states
+ * @property {number} index - Current index in history
+ * @property {number} position - Position in parent
+ */
+
+/**
+ * @typedef {Map<string, RewindChildState>} RewindChildrenState
+ */
+
+/**
+ * @typedef {Map<string, Rewindable|RewindableElement>} RewindCollection
+ */

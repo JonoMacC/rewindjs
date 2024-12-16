@@ -11,7 +11,7 @@ export class CompositeStateManager {
    * @param {Object} target - The target object to manage
    * @param {Object} options - Options
    * @param {string[]} options.observe - Properties to observe on the target
-   * @param {Map<string, Rewindable>} options.children - Collection of rewindable children
+   * @param {RewindCollection} options.children - Collection of rewindable children
    * @param {Function} options.restoreCallback - Callback to invoke when restoring a rewindable child
    */
   constructor(target, options) {
@@ -46,6 +46,9 @@ export class CompositeStateManager {
     this.#stateManager.state = rest;
   }
 
+  /**
+   * @returns {RewindCollection} Collection of rewindable children
+   */
   get children() {
     return this.#childStateManager.children;
   }
@@ -54,6 +57,9 @@ export class CompositeStateManager {
     this.#childStateManager.addChild(id, child);
   }
 
+  /**
+   * @param {string} id - Unique identifier for the child
+   */
   removeChild(id) {
     this.#childStateManager.removeChild(id);
   }
