@@ -155,4 +155,11 @@ export class ChildStateManager {
   get children() {
     return this.#children;
   }
+
+  /**
+   * @param {RewindCollection} children - Collection of rewindable children to set
+   */
+  set children(children) {
+    this.#children = children;
+  }
 }

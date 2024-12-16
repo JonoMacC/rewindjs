@@ -53,6 +53,17 @@ export class CompositeStateManager {
     return this.#childStateManager.children;
   }
 
+  /**
+   * @param {RewindCollection} children - Collection of rewindable children
+   */
+  set children(children) {
+    this.#childStateManager.children = children;
+  }
+
+  /**
+   * @param {string} id - Unique identifier for the child
+   * @param {Rewindable|RewindableElement} child - Rewindable child
+   */
   addChild(id, child) {
     this.#childStateManager.addChild(id, child);
   }
