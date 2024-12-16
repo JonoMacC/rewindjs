@@ -58,7 +58,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     #rewindable;
     #eventHandler;
     #propertyHandlers = new Map();
-    #baselineRecorded = false;
 
     /**
      * @param {...any} args - Arguments for the TargetClass constructor.
@@ -77,9 +76,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         host: this,
         restoreCallback: (id, child) => this.addRewindable(id, child)
       });
-
-      // Override recordBaseline method in the Rewindable to handle scenario within the DOM
-      RewindableClass.prototype.recordBaseline = function() {};
 
       this.#rewindable = new RewindableClass(...args);
 
@@ -175,22 +171,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       );
     }
 
-    #recordBaseline() {
-      if (this.#baselineRecorded) return;
-
-      // Check if all children have completed their initial recording
-      const childrenReady = Array.from(this.rewindChildren
-        .values())
-        .every(child => child.rewindHistory && child.rewindHistory.length > 0);
-
-      if (childrenReady) {
-        this.record();
-        this.#baselineRecorded = true;
-      } else {
-        Promise.resolve().then(() => this.#recordBaseline());
-      }
-    }
-
     // Public API methods that delegate to core Rewindable
 
     /**
@@ -237,14 +217,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
       // Setup any children that are declared in the DOM
       this.#observeChildren();
-
-      // Handle initial state recording
-      Promise.resolve().then(() => {
-        if (this.rewindHistory.length !== 0) {
-          this.#baselineRecorded = true;
-        }
-        this.#recordBaseline();
-      });
     }
 
     disconnectedCallback() {
