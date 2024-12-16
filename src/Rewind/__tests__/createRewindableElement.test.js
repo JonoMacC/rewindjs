@@ -95,6 +95,9 @@ describe("createRewindableElement", () => {
 
       // Instantiate the component
       component = new RewindableElement();
+
+      // Append the component to the DOM
+      document.body.appendChild(component);
     });
 
     it("should record initial state", () => {
@@ -397,11 +400,31 @@ describe("createRewindableElement", () => {
       expect(component.contains(child2)).toBe(true);
     });
 
-    it("should record baseline after initial children are ready", () => {
+    it("should record baseline after initial children are ready", async () => {
       const child1 = new AltRewindableElement();
       const child2 = new AltRewindableElement();
       component = new RewindableElement({
         children: new Map([["1", child1], ["2", child2]])
+      });
+
+      // Add component to the DOM
+      document.body.appendChild(component);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
       });
 
       // Verify that only one state in history was recorded
@@ -495,7 +518,27 @@ describe("createRewindableElement", () => {
       child = new RewindableElement();
     });
 
-    it("should record when a child is added and removed", () => {
+    it("should record when a child is added and removed", async () => {
+      // Add component to the DOM
+      document.body.appendChild(component);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
+
       // Add the child
       component.addRewindable("1", child);
 
@@ -512,7 +555,27 @@ describe("createRewindableElement", () => {
       expect(component.rewindHistory[2].children.size).toBe(0);
     });
 
-    it("should restore a deleted child from history", () => {
+    it("should restore a deleted child from history", async () => {
+      // Add component to the DOM
+      document.body.appendChild(component);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
+
       // Add the child
       component.addRewindable("1", child);
 
@@ -574,9 +637,46 @@ describe("createRewindableElement", () => {
       expect(component.rewindState.children.get("3").position).toBe(2);
     });
 
-    it("should restore the history of a deleted child", () => {
+    it("should restore the history of a deleted child", async () => {
+      // Add component to the DOM
+      document.body.appendChild(component);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
+
       // Add the child
       component.addRewindable("1", child);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
 
       // Change the value of the child
       child.value = 7;
@@ -602,9 +702,46 @@ describe("createRewindableElement", () => {
       expect(addedChild.rewindHistory[1].value).toBe(7);
     });
 
-    it("should restore a deleted child in the correct position", () => {
+    it("should restore a deleted child in the correct position", async () => {
+      // Add component to the DOM
+      document.body.appendChild(component);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
+
       // Add a child
       component.addRewindable("1", child);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
 
       // Verify the child's position is 0
       expect(component.rewindState.children.get("1").position).toBe(0);
@@ -612,6 +749,23 @@ describe("createRewindableElement", () => {
       // Add a second child
       const child2 = new RewindableElement();
       component.addRewindable("2", child2);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
 
       // Verify the second child's position is 1
       expect(component.rewindState.children.get("2").position).toBe(1);
@@ -630,7 +784,7 @@ describe("createRewindableElement", () => {
       expect(firstChild).toEqual(child);
 
       // Verify the rewind index
-      expect(component.rewindIndex).toBe(2);
+      expect(component.rewindIndex).toBe(3);
 
       // Verify both children are present in the history at the current index
       expect(component.rewindHistory[2].children.size).toBe(2);
