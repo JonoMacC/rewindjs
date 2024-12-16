@@ -7,11 +7,6 @@ import cel from "../lib/celerity/cel.js";
 // Type definitions
 import './__types__/types.js';
 
-const scheduleNextFrame =
-  typeof requestAnimationFrame !== "undefined"
-    ? requestAnimationFrame
-    : (cb) => setTimeout(cb, 0);
-
 /**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are
  * automatically recorded when changed, and methods in `coalesce` result in a single recording each time they are
@@ -63,6 +58,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     #rewindable;
     #eventHandler;
     #propertyHandlers = new Map();
+    #baselineRecorded = false;
 
     /**
      * @param {...any} args - Arguments for the TargetClass constructor.
@@ -83,42 +79,14 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       });
 
       // Override recordBaseline method in the Rewindable to handle scenario within the DOM
-      RewindableClass.prototype.recordBaseline = function() {
-        if (this._getBaselineRecorded()) return;
-
-        const initialize = (attempts = 0) => {
-          // Check if all children have completed their initial recording
-          const childrenReady = Array.from(this.rewindChildren
-            .values())
-            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
-
-          if (childrenReady) {
-            console.info('All children ready - Recording parent state');
-            this.record();
-            this._setBaselineRecorded();
-          } else if (attempts < 10) {  // Prevent infinite loop
-            // Wait a bit and try again
-            scheduleNextFrame(() => initialize(attempts + 1));
-          } else {
-            console.warn('Could not initialize all children after multiple attempts');
-            this.record();
-            this._setBaselineRecorded();
-          }
-        }
-
-        // Handle different DOM readiness scenarios
-        if (document.readyState === 'loading') {
-          window.addEventListener('DOMContentLoaded', initialize);
-        } else {
-          initialize();
-        }
-      }
+      RewindableClass.prototype.recordBaseline = function() {};
 
       this.#rewindable = new RewindableClass(...args);
 
       // Defer intercept to ensure the Rewindable is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
 
+      // Setup any children that were provided as arguments
       this.#setupChildren(children);
     }
 
@@ -178,15 +146,56 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @param {Map<string, RewindableElement>} children - Collection of rewindable children
      */
     #setupChildren(children) {
-      if (children) {
-        for (const [id, child] of children.entries()) {
-          // Get the position from the state
-          const {position} = this.rewindState.children.get(id);
+      for (const [id, child] of children.entries()) {
+        // Get the position from the state
+        const {position} = this.rewindState.children.get(id);
 
-          // Add the child to the element in the correct position
-          this.insertBefore(child, this.children[position]);
+        // Set the child id
+        child.id = id;
+
+        // Add the child to the element in the correct position
+        this.insertBefore(child, this.children[position]);
+      }
+    }
+
+    /**
+     * Adds any rewindable children in the DOM to the state. Children could be declaratively added in the DOM of the
+     * element rather than passed in as arguments
+     */
+    #observeChildren() {
+      const rewindElements = Array.from(this.children)
+        .filter((child) => !!child.constructor.rewindOptions);
+      this.#rewindable.rewindChildren = new Map(
+        rewindElements.map((child) => {
+          // Ensure each child has a unique identifier
+          const childId = child.id || cel.randomId();
+          child.id = childId;
+          return [childId, child];
+        })
+      );
+    }
+
+    #recordBaseline() {
+      if (this.#baselineRecorded) return;
+
+      const initialize = () => {
+        // Check if all children have completed their initial recording
+        const childrenReady = Array.from(this.rewindChildren
+          .values())
+          .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+        console.log(`Children ready: ${childrenReady}`);
+
+        if (childrenReady) {
+          console.info('Children ready - Recording parent state');
+          this.record();
+          this.#baselineRecorded = true;
+        } else {
+          Promise.resolve().then(() => initialize());
         }
       }
+
+      initialize();
     }
 
     // Public API methods that delegate to core Rewindable
@@ -232,6 +241,17 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
       // Setup keyboard shortcuts for undo and redo
       this.#setupKeyboardHandlers(options.keys);
+
+      // Setup any children that are declared in the DOM
+      this.#observeChildren();
+
+      // Handle initial state recording
+      Promise.resolve().then(() => {
+        if (this.rewindHistory.length !== 0) {
+          this.#baselineRecorded = true;
+        }
+        this.#recordBaseline();
+      });
     }
 
     disconnectedCallback() {
