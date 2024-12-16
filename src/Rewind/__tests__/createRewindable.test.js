@@ -123,9 +123,9 @@ describe("createRewindable", () => {
 
     it("should handle initial history and index", () => {
       const history = [
-        { top: 0, left: 0, content: "First" },
-        { top: 10, left: 10, content: "Second" },
-        { top: 20, left: 20, content: "Third" },
+        { top: 0, left: 0, content: "First", children: new Map() },
+        { top: 10, left: 10, content: "Second", children: new Map() },
+        { top: 20, left: 20, content: "Third", children: new Map() },
       ];
       const index = 1;
 
@@ -166,9 +166,9 @@ describe("createRewindable", () => {
 
     it("should record a change made at the end of the redo stack", () => {
       const history = [
-        { content: "He" },
-        { content: "Hell" },
-        { content: "Hello" },
+        { content: "He", children: new Map() },
+        { content: "Hell", children: new Map() },
+        { content: "Hello", children: new Map() },
       ];
       const index = 2;
 
@@ -308,9 +308,9 @@ describe("createRewindable", () => {
 
       it("should record a change made at the end of the redo stack", () => {
         const history = [
-          { content: "He" },
-          { content: "Hell" },
-          { content: "Hello" },
+          { content: "He", children: new Map() },
+          { content: "Hell", children: new Map() },
+          { content: "Hello", children: new Map() },
         ];
         const index = 2;
 
