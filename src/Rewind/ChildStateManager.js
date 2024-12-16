@@ -161,5 +161,8 @@ export class ChildStateManager {
    */
   set children(children) {
     this.#children = children;
+
+    // Register child types
+    this.#children.forEach(child => this.registerChildType(child.constructor));
   }
 }
