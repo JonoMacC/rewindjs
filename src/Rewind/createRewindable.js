@@ -56,7 +56,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       const options = this.constructor.rewindOptions;
 
       const targetClass = this.constructor.targetClass;
-      this.#target = targetClass.prototype instanceof HTMLElement
+      this.#target = (typeof HTMLElement !== 'undefined'
+        && targetClass.prototype instanceof HTMLElement)
         ? document.createElement(targetClass.tagName)
         : new targetClass(...args.slice(1));
 
