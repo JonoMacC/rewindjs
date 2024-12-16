@@ -74,8 +74,8 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         ...options,
         propertyHandlers: this.#propertyHandlers,
         host: this,
-        restoreCallback: (id, child) => this.addRewindable(id, child)
         restoreCallback: (id, child) => this.addRewindable(id, child),
+        destroyCallback: (id) => this.removeRewindable(id),
       });
 
       this.#rewindable = new RewindableClass(...args);
@@ -95,7 +95,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @param {string[]} observe - Properties to observe
      * @param {Object<string, number>} [debounce] - Debounce times for properties
      */
-    #setupPropertyHandlers(observe, debounce= {}) {
+    #setupPropertyHandlers(observe = [], debounce= {}) {
       for (const prop of observe) {
         if (prop in debounce) {
           const delay = debounce[prop];
