@@ -178,24 +178,17 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     #recordBaseline() {
       if (this.#baselineRecorded) return;
 
-      const initialize = () => {
-        // Check if all children have completed their initial recording
-        const childrenReady = Array.from(this.rewindChildren
-          .values())
-          .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+      // Check if all children have completed their initial recording
+      const childrenReady = Array.from(this.rewindChildren
+        .values())
+        .every(child => child.rewindHistory && child.rewindHistory.length > 0);
 
-        console.log(`Children ready: ${childrenReady}`);
-
-        if (childrenReady) {
-          console.info('Children ready - Recording parent state');
-          this.record();
-          this.#baselineRecorded = true;
-        } else {
-          Promise.resolve().then(() => initialize());
-        }
+      if (childrenReady) {
+        this.record();
+        this.#baselineRecorded = true;
+      } else {
+        Promise.resolve().then(() => this.#recordBaseline());
       }
-
-      initialize();
     }
 
     // Public API methods that delegate to core Rewindable
