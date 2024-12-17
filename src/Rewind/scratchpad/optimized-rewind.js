@@ -1,7 +1,7 @@
-import {UndoModel} from "../Rewind/HistoryManager";
+import {UndoModel} from "../HistoryManager";
 
 // Utilities
-import cel from "../lib/celerity/cel.js";
+import cel from "../../lib/celerity/cel.js";
 
 /**
  * Represents a single change in the history
