@@ -54,6 +54,8 @@ class BaseTile extends HTMLElement {
     };
   }
 
+  // Accessors
+
   set top(value) {
     this.style.top = `${value}px`;
   }
@@ -77,6 +79,20 @@ class BaseTile extends HTMLElement {
   get label() {
     return this.textContent;
   }
+
+  // Lifecycle
+
+  connectedCallback() {
+    this.addEventListener("keydown", this.#handleKeydown);
+    this.addEventListener("focusout", this.#handleChange);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener("keydown", this.#handleKeydown);
+    this.removeEventListener("focusout", this.#handleChange);
+  }
+
+  // Private methods
 
   #handleKeydown(event) {
     // Handle keys that will trigger relabeling a tile
@@ -104,17 +120,6 @@ class BaseTile extends HTMLElement {
       composed: true,
     });
     this.dispatchEvent(event);
-  }
-
-  connectedCallback() {
-    // Remove initialization from attributes
-    this.addEventListener("keydown", this.#handleKeydown);
-    this.addEventListener("focusout", this.#handleChange);
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener("keydown", this.#handleKeydown);
-    this.removeEventListener("focusout", this.#handleChange);
   }
 }
 
