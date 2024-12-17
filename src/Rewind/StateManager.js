@@ -51,8 +51,7 @@ export class StateManager {
 
     // Get the child state from the children
     const children = new Map(
-      Array.from(this.#children.entries())
-        .map(([id, child], _) => [
+      Array.from(this.#children.entries(), ([id, child]) => [
           id,
           {
             type: generateKey(child.constructor),
