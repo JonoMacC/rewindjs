@@ -4,6 +4,7 @@ import { generateKey } from "../__utils__/generateKey.js";
 
 // Mocks
 import { MockRewindablePerson as MockRewindable } from '../__mocks__/MockRewindablePerson.js';
+import { MockRewindableCounter as MockCounter } from "../__mocks__/MockRewindableCounter";
 
 describe('StateManager', () => {
   let target;
@@ -221,6 +222,152 @@ describe('StateManager', () => {
       expect(target.bool).toBe(false);
       expect(target.arr).toEqual([4, 5, 6]);
       expect(target.obj).toEqual({ newKey: 'new value' });
+    });
+  });
+
+  // Child State Tests
+  describe('Child State', () => {
+    beforeEach(() => {
+      typeKey = generateKey(MockCounter);
+      child1 = new MockCounter({
+        history: [{value: 0}, {value: 1}, {value: 2}],
+        index: 1
+      });
+      child2 = new MockCounter({
+        history: [{value: 0}, {value: 10}, {value: 100}],
+        index: 2
+      });
+      target = {};
+      stateManager = new StateManager(target);
+    });
+
+    // Constructor Tests
+    describe('Constructor', () => {
+      it('should initialize with an empty map by default', () => {
+        expect(stateManager.children.size).toBe(0);
+      });
+
+      it('should initialize with pre-populated children', () => {
+        const initialChildren = new Map([
+          ['1', child1],
+          ['2', child2]
+        ]);
+        const populatedManager = new StateManager(target, { children: initialChildren });
+        expect(populatedManager.children.size).toBe(2);
+      });
+    });
+
+    // addChild Method Tests
+    describe('addChild', () => {
+      it('should add a single child', () => {
+        stateManager.addChild('1', child1);
+        expect(stateManager.children.size).toBe(1);
+        expect(stateManager.children.get('1')).toBe(child1);
+      });
+
+      it('should replace a child with the same identifier', () => {
+        stateManager.addChild('1', child1);
+        const newChild = new MockRewindable({
+          history: [{value: 5}],
+          index: 0
+        });
+        stateManager.addChild('1', newChild);
+        expect(stateManager.children.size).toBe(1);
+        expect(stateManager.children.get('1')).toBe(newChild);
+      });
+
+      it('should handle multiple children with unique identifiers', () => {
+        stateManager.addChild('1', child1);
+        stateManager.addChild('2', child2);
+        expect(stateManager.children.size).toBe(2);
+      });
+    });
+
+    // removeChild Method Tests
+    describe('removeChild', () => {
+      it('should remove an existing child', () => {
+        stateManager.addChild('1', child1);
+        stateManager.removeChild('1');
+        expect(stateManager.children.size).toBe(0);
+      });
+
+      it('should not throw an error when removing a non-existent child', () => {
+        expect(() => stateManager.removeChild('nonexistent')).not.toThrow();
+      });
+    });
+
+    // State Getter Tests
+    describe('state getter', () => {
+      it('should generate a state snapshot for an empty collection', () => {
+        const emptyState = stateManager.state;
+        expect(emptyState.children.size).toBe(0);
+      });
+
+      it('should generate a state snapshot with multiple children', () => {
+        stateManager.addChild('1', child1);
+        stateManager.addChild('2', child2);
+
+        const state = stateManager.state;
+        expect(state.children.size).toBe(2);
+
+        const child1State = state.children.get('1');
+        expect(child1State).toMatchObject({
+          type: typeKey,
+          history: [{value: 0}, {value: 1}, {value: 2}],
+          index: 1,
+          position: 0
+        });
+
+        const child2State = state.children.get('2');
+        expect(child2State).toMatchObject({
+          type: expect.any(String),
+          history: [{value: 0}, {value: 10}, {value: 100}],
+          index: 2,
+          position: 1
+        });
+      });
+    });
+
+    // State Setter Tests
+    describe('state setter', () => {
+      it('should restore state to an empty collection', () => {
+        const newState = new Map([
+          ['1', {
+            type: typeKey,
+            history: [{value: 10}, {value: 20}],
+            index: 1
+          }]
+        ]);
+
+        // Register the Rewindable type
+        stateManager.registerChildType(MockCounter);
+
+        stateManager.state = {children: newState};
+        expect(stateManager.children.size).toBe(1);
+
+        const restoredChild = stateManager.children.get('1');
+        expect(restoredChild).toBeInstanceOf(MockCounter);
+        expect(restoredChild.rewindHistory).toEqual([{value: 10}, {value: 20}]);
+        expect(restoredChild.rewindIndex).toBe(1);
+      });
+
+      it('should remove children not in the new state', () => {
+        stateManager.addChild('1', child1);
+        stateManager.addChild('2', child2);
+
+        const newState = new Map([
+          ['1', {
+            type: typeKey,
+            history: [{value: 0}],
+            index: 0
+          }]
+        ]);
+
+        stateManager.state = {children: newState};
+        expect(stateManager.children.size).toBe(1);
+        expect(stateManager.children.has('1')).toBe(true);
+        expect(stateManager.children.has('2')).toBe(false);
+      });
     });
   });
 
