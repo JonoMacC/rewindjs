@@ -1,5 +1,5 @@
 // Utilities
-import { generateKey } from "./__utils__/generateKey";
+import { generateKey } from "./__utils__/generateKey.js";
 import cel from "../lib/celerity/cel.js";
 
 export class StateManager {
@@ -7,8 +7,7 @@ export class StateManager {
   #observe;
   #children;
   #childTypes = new Map();
-  #restoreCallback;
-  #destroyCallback;
+  #childHandler;
   #childPositions = new Map();
 
   /**
@@ -18,15 +17,20 @@ export class StateManager {
    * @param {Object} options - Options
    * @param {string[]} options.observe - Properties to observe on the target
    * @param {RewindCollection} options.children - Collection of rewindable children
-   * @param {Function} options.restoreCallback - Callback to invoke when restoring a rewindable child
-   * @param {Function} options.destroyCallback - Callback to invoke when reversing a rewindable child restore
+   * @param {ChildHandler} options.childHandler - Handler for updating rewindable children
    */
-  constructor(target, options) {
+  constructor(target, {
+    observe = [],
+    children = new Map(),
+    childHandler = {
+      add: (id, child) => this.addChild(id, child),
+      remove: (id) => this.removeChild(id)
+    }
+  } = {}) {
     this.#target = target;
-    this.#observe = new Set(options?.observe || []);
-    this.#children = options?.children || new Map();
-    this.#restoreCallback = options?.restoreCallback || null;
-    this.#destroyCallback = options?.destroyCallback || null;
+    this.#observe = new Set(observe);
+    this.#children = children;
+    this.#childHandler = childHandler;
 
     // Register child types
     this.#children.forEach(child => this.registerChildType(child.constructor));
@@ -74,7 +78,7 @@ export class StateManager {
     const properties = {...newState};
     delete properties.children;
 
-    // Set the children
+    // Update children using the child handler
     this.#updateChildren(children);
 
     Object.entries(properties).forEach(([key, value]) => {
@@ -132,11 +136,7 @@ export class StateManager {
     child.travel(index);
 
     // Add the child
-    if (this.#restoreCallback) {
-      this.#restoreCallback(id, child);
-    } else {
-      this.addChild(id, child);
-    }
+    this.#childHandler.add(id, child)
 
     return child;
   }
@@ -149,11 +149,7 @@ export class StateManager {
     for (const id of this.#children.keys()) {
       if (!newState.has(id)) {
         // Remove the child
-        if (this.#destroyCallback) {
-          this.#destroyCallback(id);
-        } else {
-          this.removeChild(id);
-        }
+        this.#childHandler.remove(id);
       }
     }
 

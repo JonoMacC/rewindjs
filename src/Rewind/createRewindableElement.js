@@ -74,8 +74,10 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         ...options,
         propertyHandlers: this.#propertyHandlers,
         host: this,
-        restoreCallback: (id, child) => this.addRewindable(id, child),
-        destroyCallback: (id) => this.removeRewindable(id),
+        childHandler: {
+          add: (id, child) => this.addRewindable(id, child),
+          remove: (id) => this.removeRewindable(id)
+        }
       });
 
       this.#rewindable = new RewindableClass(...args);

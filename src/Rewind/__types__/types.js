@@ -23,14 +23,19 @@
  */
 
 /**
+ * @typedef {Object} ChildHandler
+ * @property {Function} add - Function to add a child
+ * @property {Function} remove - Function to remove a child
+ */
+
+/**
  * @typedef {Object} RewindOptions
  * @property {UndoModel} [model='linear'] - Undo model
  * @property {string[]} [observe=[]] - Properties to observe with auto-recording
  * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
  * @property {Map} [propertyHandlers=Map()] - Functions to execute on a property change
  * @property {Object} [host] - Target to intercept for auto-recording
- * @property {Function} [restoreCallback=null] - Function to call when restoring a rewindable child
- * @property {Function} [destroyCallback=null] - Function to call when destroying a rewindable child
+ * @property {ChildHandler} [childHandler={}] - Custom child add and remove functions
  */
 
 /**

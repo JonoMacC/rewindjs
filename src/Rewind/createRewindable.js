@@ -64,9 +64,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#historyManager = new HistoryManager(options.model);
       this.#stateManager = new StateManager(options.host || this.#target, {
           observe: options.observe,
-          children: config.children || new Map(),
-          restoreCallback: options.restoreCallback,
-          destroyCallback: options.destroyCallback
+          children: config.children,
+          childHandler: options.childHandler,
         });
 
       // Setup property forwarding
