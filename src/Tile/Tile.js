@@ -14,6 +14,8 @@ class BaseTile extends HTMLElement {
   };
   #keys;
   #alphaNumKeys = /^[0-9a-zA-Z]$/;
+  #keyHandlers;
+
   constructor() {
     super();
     this.tabIndex = 0;
@@ -32,7 +34,7 @@ class BaseTile extends HTMLElement {
     this.label =
       this.getAttribute("label") !== null ? this.getAttribute("label") : "";
 
-    this.keyHandlers = {
+    this.#keyHandlers = {
       submitKey: this.#handleChange.bind(this),
       upKey: () => {
         this.top -= 10;
@@ -80,7 +82,7 @@ class BaseTile extends HTMLElement {
     // Handle keys that will trigger relabeling a tile
     if (this.#alphaNumKeys.test(event.key)
       && !(event.ctrlKey || event.metaKey)) {
-      this.keyHandlers.alphaNumKey(event.key);
+      this.#keyHandlers.alphaNumKey(event.key);
       return;
     }
 
@@ -89,7 +91,7 @@ class BaseTile extends HTMLElement {
 
     for (const [action, keys] of Object.entries(this.#keyMap)) {
       if (keys.includes(key)) {
-        this.keyHandlers[action]();
+        this.#keyHandlers[action]();
         return;
       }
     }
