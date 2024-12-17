@@ -72,7 +72,9 @@ class BaseBoard extends HTMLElement {
     tile.resume();
     tile.record();
 
-    this.addRewindable(tile);
+    this.addRewindable(cel.randomId(), tile);
+
+    tile.focus();
   }
 
   delete() {
