@@ -1,38 +1,20 @@
-import { RewindComposite } from "../Rewind/RewindComposite.js";
-
-// Components
+import rewind from "../Rewind/rewind.js";
 import Tile from "../Tile/Tile.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";
 
 class BaseBoard extends HTMLElement {
-  constructor() {
-    super();
-    this.tabIndex = 0;
-    this.id = cel.randomId();
-  }
-}
-
-export default class Board extends RewindComposite(BaseBoard) {
-  #keys;
   #keyMap = {
     insertKey: ["Shift+Enter"],
     deleteKey: ["Backspace", "Delete"],
   };
+  #keys;
+
   constructor() {
-    super({
-      selectors: ["gx-tile"],
-      createChild: (initialState, options) => {
-        const tile = new Tile(initialState);
-        tile.id = cel.randomId();
-        if (!initialState.label) {
-          tile.label = cel.alphaLabel(this.children.length + 1);
-        }
-        return tile;
-      },
-      childOptions: {},
-    });
+    super();
+    this.tabIndex = 0;
+    this.id = cel.randomId();
     this.#keys = new Set(Object.values(this.#keyMap).flat());
     this.keyHandlers = {
       insertKey: this.spawnTile.bind(this),
@@ -40,20 +22,19 @@ export default class Board extends RewindComposite(BaseBoard) {
     };
   }
 
-  spawnTile() {
-    const tileWidth = 80;
-    const tileHeight = 80;
+  // Lifecycle
 
-    const initialState = {
-      top: this.offsetHeight / 2 - tileHeight / 2,
-      left: this.offsetWidth / 2 - tileWidth / 2,
-      label: cel.alphaLabel(this.children.length + 1),
-    };
-
-    const tile = this.spawn(initialState);
-    tile.focus();
-    this.record();
+  connectedCallback() {
+    this.addEventListener("keydown", this.#handleKeydown);
+    this.addEventListener("change", this.#handleChange);
   }
+
+  disconnectedCallback() {
+    this.removeEventListener("keydown", this.#handleKeydown);
+    this.removeEventListener("change", this.#handleChange);
+  }
+
+  // Private methods
 
   #handleKeydown(event) {
     const key = cel.keyCombo(event);
@@ -71,17 +52,37 @@ export default class Board extends RewindComposite(BaseBoard) {
     this.record();
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener("keydown", this.#handleKeydown);
-    this.addEventListener("change", this.#handleChange);
+  // Public methods
+
+  spawnTile() {
+    const tileWidth = 80;
+    const tileHeight = 80;
+
+    const initialState = {
+      top: this.offsetHeight / 2 - tileHeight / 2,
+      left: this.offsetWidth / 2 - tileWidth / 2,
+      label: cel.alphaLabel(this.children.length + 1),
+    };
+
+    const tile = new Tile();
+    tile.suspend();
+    tile.top = initialState.top;
+    tile.left = initialState.left;
+    tile.label = initialState.label;
+    tile.resume();
+    tile.record();
+
+    this.addRewindable(tile);
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener("keydown", this.#handleKeydown);
-    this.removeEventListener("change", this.#handleChange);
+  delete() {
+    // Get focused tile
+    const tile = this.querySelector('gx-tile:focus');
+    if (!tile) return;
+    this.removeRewindable(tile.id);
   }
 }
+
+const Board = rewind(BaseBoard);
 
 customElements.define("gx-board", Board);
