@@ -190,9 +190,9 @@ describe("Rewind", () => {
 
   it("should record a change made at the end of the redo stack", () => {
     const history = [
-      { content: "He" },
-      { content: "Hell" },
-      { content: "Hello" },
+      { content: "He", children: new Map() },
+      { content: "Hell", children: new Map() },
+      { content: "Hello", children: new Map() },
     ];
     const index = 2;
 
@@ -205,7 +205,11 @@ describe("Rewind", () => {
     });
 
     // Undo to initial state and redo to the end
-    component.undo().undo().redo().redo();
+    component
+      .undo()
+      .undo()
+      .redo()
+      .redo();
 
     // Verify that we have returned to the last state
     expect(component.rewindHistory.length).toBe(3);
