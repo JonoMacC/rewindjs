@@ -809,5 +809,49 @@ describe("createRewindableElement", () => {
       const secondChild = component.children[1];
       expect(secondChild).toEqual(child2);
     });
+
+    it("should remove a restored child as part of a redo", async () => {
+      // Add component to the DOM
+      document.body.appendChild(component);
+
+      // Create a promise that resolves when children are initialized
+      await new Promise(resolve => {
+        const checkInitialization = () => {
+          const childrenReady = Array.from(component.rewindChildren.values())
+            .every(child => child.rewindHistory && child.rewindHistory.length > 0);
+
+          if (childrenReady) {
+            resolve();
+          } else {
+            // Schedule another check
+            setTimeout(checkInitialization, 10);
+          }
+        };
+
+        checkInitialization();
+      });
+
+      // Add the child
+      component.addRewindable("1", child);
+
+      // Remove the child
+      component.removeRewindable("1");
+
+      // Undo the removal
+      component.undo();
+
+      // Redo the removal
+      component.redo();
+
+      // Verify that no children are present
+      expect(component.rewindChildren.size).toBe(0);
+      expect(component.rewindState.children.size).toBe(0);
+
+      // Verify that the component has traveled to the correct place in history
+      expect(component.rewindIndex).toBe(2);
+
+      // Verify that the child is in history
+      expect(component.rewindHistory[1].children.size).toBe(1);
+    });
   });
 });
