@@ -1,5 +1,5 @@
 import {HistoryManager} from "./HistoryManager.js";
-import {CompositeStateManager} from "./CompositeStateManager.js";
+import {StateManager} from "./StateManager.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";
@@ -62,7 +62,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         : new targetClass(...args.slice(1));
 
       this.#historyManager = new HistoryManager(options.model);
-      this.#stateManager = new CompositeStateManager(options.host || this.#target, {
+      this.#stateManager = new StateManager(options.host || this.#target, {
           observe: options.observe,
           children: config.children || new Map(),
           restoreCallback: options.restoreCallback,
