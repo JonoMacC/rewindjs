@@ -1,5 +1,5 @@
 import rewind from "../Rewind/rewind.js";
-import Tile from "../Tile/Tile.js";
+import RewindTile from "../demos/tiles/RewindTile/RewindTile.js";
 
 // Utilities
 import cel from "../lib/celerity/cel.js";
@@ -64,7 +64,7 @@ class BaseBoard extends HTMLElement {
       label: cel.alphaLabel(this.children.length + 1),
     };
 
-    const tile = new Tile();
+    const tile = new RewindTile();
     tile.suspend();
     tile.top = initialState.top;
     tile.left = initialState.left;

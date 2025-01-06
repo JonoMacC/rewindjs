@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Undo Redo Prototype</title>
-    <link rel="stylesheet" href="demos/common/styles.css">
+    <title>Rewind – Tiles</title>
+    <link rel="stylesheet" href="../common/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -18,9 +18,14 @@
   </head>
   <body>
     <main>
+      <header>
+        <span class="intro">Demo 1</span>
+        <h1>Tiles</h1>
+        <p>The tiles are rewindable. Tiles can be moved and relabelled. Each change can be undone or redone independent of other tiles.</p>
+      </header>
       <section id="help">
         <section>
-          <h2>RewindTile</h2>
+          <h2>Tile</h2>
           <ul>
             <li>
               <kbd>↑</kbd>,
@@ -46,43 +51,16 @@
               <kbd>Z</kbd>
               to redo
             </li>
-            <li><kbd>Enter</kbd>
-              to record a change to the board</li>
-            <li><kbd>Delete</kbd>
-              or
-              <kbd>Backspace</kbd>
-              to delete a tile</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Board</h2>
-          <ul>
-            <li><kbd>Ctrl</kbd>
-              <kbd>Z</kbd>
-              to undo</li>
-            <li>
-              <kbd>Ctrl</kbd>
-              <kbd>Y</kbd>
-              or
-              <kbd>Ctrl</kbd>
-              <kbd>Shift</kbd>
-              <kbd>Z</kbd>
-              to redo
-            </li>
-            <li><kbd>Shift</kbd>
-              <kbd>Enter</kbd>
-              to spawn a new tile</li>
           </ul>
         </section>
       </section>
-      <gx-shell
-      ><gx-board id="board-1">
-          <gx-tile top="80" left="20" label="a"></gx-tile>
-          <gx-tile top="120" left="120" label="b"></gx-tile>
-          <gx-tile top="240" left="120" label="c"></gx-tile>
-          <gx-tile top="280" left="260" label="d"></gx-tile>
-        </gx-board></gx-shell>
+      <gx-shell>
+        <gx-rw-tile top="80" left="20" label="a"></gx-rw-tile>
+        <gx-rw-tile top="120" left="120" label="b"></gx-rw-tile>
+        <gx-rw-tile top="240" left="120" label="c"></gx-rw-tile>
+        <gx-rw-tile top="280" left="260" label="d"></gx-rw-tile>
+      </gx-shell>
     </main>
   </body>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="./index.js"></script>
 </html>

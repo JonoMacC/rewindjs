@@ -195,9 +195,37 @@ label {
     color: var(--text-light);
 }
 
-#help {
+header {
+    border-bottom: 1px solid var(--border-000);
     position: absolute;
-    inset: var(--space-2) var(--space-2) auto auto;
+    top: 0;
+    padding: var(--space-4);
+
+    & .intro {
+        text-transform: uppercase;
+        color: var(--active);
+        font-size: 0.875rem;
+
+        &::before {
+            content: "";
+            width: 0.8em;
+            height: 0.8em;
+            background-color: var(--active);
+            display: inline-block;
+            margin-right: 0.5em;
+        }
+    }
+}
+
+p {
+    max-inline-size: 80ch;
+}
+
+#help {
+    user-select: none;
+    --webkit-user-select: none;
+    position: absolute;
+    inset: auto var(--space-2) auto auto;
     padding: var(--space-3);
     font-size: 0.7rem;
     z-index: 1;

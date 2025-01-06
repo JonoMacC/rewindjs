@@ -1,12 +1,11 @@
-import rewind from "../Rewind/rewind.js";
+import rewind from "../../../Rewind/rewind.js";
 
 // Utilities
-import cel from "../lib/celerity/cel.js";
+import cel from "../../../lib/celerity/cel.js";
 
 // Define the base tile class
-class BaseTile extends HTMLElement {
+class Tile extends HTMLElement {
   #keyMap = {
-    submitKey: ["Enter"],
     leftKey: ["ArrowLeft"],
     upKey: ["ArrowUp"],
     rightKey: ["ArrowRight"],
@@ -15,6 +14,7 @@ class BaseTile extends HTMLElement {
   #keys;
   #alphaNumKeys = /^[0-9a-zA-Z]$/;
   #keyHandlers;
+  #step = 10;
 
   constructor() {
     super();
@@ -35,21 +35,25 @@ class BaseTile extends HTMLElement {
       this.getAttribute("label") !== null ? this.getAttribute("label") : "";
 
     this.#keyHandlers = {
-      submitKey: this.#handleChange.bind(this),
       upKey: () => {
-        this.top -= 10;
+        this.top -= this.#step;
+        this.#handleChange();
       },
       downKey: () => {
-        this.top += 10;
+        this.top += this.#step;
+        this.#handleChange();
       },
       leftKey: () => {
-        this.left -= 10;
+        this.left -= this.#step;
+        this.#handleChange();
       },
       rightKey: () => {
-        this.left += 10;
+        this.left += this.#step;
+        this.#handleChange();
       },
       alphaNumKey: (key) => {
-        this.label = key ;
+        this.label = key;
+        this.#handleChange();
       },
     };
   }
@@ -57,6 +61,7 @@ class BaseTile extends HTMLElement {
   // Accessors
 
   set top(value) {
+    if (this.style.top === `${value}px`) return;
     this.style.top = `${value}px`;
   }
 
@@ -65,6 +70,7 @@ class BaseTile extends HTMLElement {
   }
 
   set left(value) {
+    if (this.style.left === `${value}px`) return;
     this.style.left = `${value}px`;
   }
 
@@ -73,6 +79,7 @@ class BaseTile extends HTMLElement {
   }
 
   set label(value) {
+    if (this.textContent === value) return;
     this.textContent = value;
   }
 
@@ -84,12 +91,12 @@ class BaseTile extends HTMLElement {
 
   connectedCallback() {
     this.addEventListener("keydown", this.#handleKeydown);
-    this.addEventListener("focusout", this.#handleChange);
+    this.addEventListener('focusout', this.#handleChange);
   }
 
   disconnectedCallback() {
     this.removeEventListener("keydown", this.#handleKeydown);
-    this.removeEventListener("focusout", this.#handleChange);
+    this.removeEventListener('focusout', this.#handleChange);
   }
 
   // Private methods
@@ -99,7 +106,6 @@ class BaseTile extends HTMLElement {
     if (this.#alphaNumKeys.test(event.key)
       && !(event.ctrlKey || event.metaKey)) {
       this.#keyHandlers.alphaNumKey(event.key);
-      return;
     }
 
     const key = cel.keyCombo(event);
@@ -123,12 +129,7 @@ class BaseTile extends HTMLElement {
   }
 }
 
-// Create the rewindable tile class (Tile + Undo/Redo)
-const Tile = rewind(BaseTile, {
-  observe: ["top", "left", "label"],
-});
-
-// Define the rewindable tile as a custom element
+// Define the tile as a custom element
 customElements.define("gx-tile", Tile);
 
 export default Tile;

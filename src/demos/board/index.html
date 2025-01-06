@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Undo Redo Prototype</title>
-    <link rel="stylesheet" href="demos/common/styles.css">
+    <title>Rewind – Board</title>
+    <link rel="stylesheet" href="../common/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -18,9 +18,14 @@
   </head>
   <body>
     <main>
+      <header>
+        <span class="intro">Demo 3</span>
+        <h1>Board</h1>
+        <p>The board is rewindable. Tiles can be added, removed, and rearranged. Each change can be undone or redone.</p>
+      </header>
       <section id="help">
         <section>
-          <h2>RewindTile</h2>
+          <h2>Tile</h2>
           <ul>
             <li>
               <kbd>↑</kbd>,
@@ -46,8 +51,6 @@
               <kbd>Z</kbd>
               to redo
             </li>
-            <li><kbd>Enter</kbd>
-              to record a change to the board</li>
             <li><kbd>Delete</kbd>
               or
               <kbd>Backspace</kbd>
@@ -71,18 +74,18 @@
             </li>
             <li><kbd>Shift</kbd>
               <kbd>Enter</kbd>
-              to spawn a new tile</li>
+              to insert a new tile</li>
           </ul>
         </section>
       </section>
       <gx-shell
       ><gx-board id="board-1">
-          <gx-tile top="80" left="20" label="a"></gx-tile>
-          <gx-tile top="120" left="120" label="b"></gx-tile>
-          <gx-tile top="240" left="120" label="c"></gx-tile>
-          <gx-tile top="280" left="260" label="d"></gx-tile>
+        <gx-tile top="80" left="20" label="a"></gx-tile>
+        <gx-tile top="120" left="120" label="b"></gx-tile>
+        <gx-tile top="240" left="120" label="c"></gx-tile>
+        <gx-tile top="280" left="260" label="d"></gx-tile>
         </gx-board></gx-shell>
     </main>
   </body>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="index.js"></script>
 </html>

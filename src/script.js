@@ -1,3 +1,3 @@
-import "./Shell/Shell.js";
+import "./demos/common/Shell/Shell.js";
 import "./Board/Board.js";
-import "./Tile/Tile.js";
+import "./demos/tiles/RewindTile/RewindTile.js";
