@@ -163,7 +163,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      */
     #observeChildren() {
       const rewindElements = Array.from(this.children)
-        .filter((child) => !!child.constructor.rewindOptions);
+        .filter((child) => this.#isRewindable(child));
       this.#rewindable.rewindChildren = new Map(
         rewindElements.map((child) => {
           // Ensure each child has a unique identifier
@@ -172,6 +172,15 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
           return [childId, child];
         })
       );
+    }
+
+    /**
+     * Tests whether an element is a Rewindable Element
+     * @param {Element} element - The element to test
+     * @returns {boolean} Whether the element is a Rewindable Element
+     */
+    #isRewindable(element) {
+      return !!element.constructor.rewindOptions;
     }
 
     // Public API methods that delegate to core Rewindable
