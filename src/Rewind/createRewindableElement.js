@@ -121,11 +121,13 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       this.addEventListener('undo', (event) => {
         this.undo();
         event.preventDefault();
+        event.stopPropagation();
       });
 
       this.addEventListener('redo', (event) => {
         this.redo();
         event.preventDefault();
+        event.stopPropagation();
       });
     }
 
