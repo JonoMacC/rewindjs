@@ -248,6 +248,12 @@ class BaseCanvas extends HTMLElement {
       position: this.children.length
     });
     this.nodes = nodes;
+
+    // Get the new node
+    const node = this.querySelector(`#${id}`);
+
+    // Start editing
+    node.edit();
   }
 
   /**
