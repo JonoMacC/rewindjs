@@ -146,7 +146,7 @@ class BaseBoard extends HTMLElement {
       top,
       left,
       label: tile.label,
-      current: tile.matches(':focus')
+      current: tile.current
     });
   }
 
