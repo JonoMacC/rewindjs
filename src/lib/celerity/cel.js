@@ -8,44 +8,6 @@ const cel = {
    */
 
   /**
-   * Selects the first element that matches the specified selector within the Element.
-   * @param {HTMLElement} element - The Element to search.
-   * @param {string} selector - A CSS selector string.
-   */
-  select(element, selector) {
-    return element.querySelector(selector);
-  },
-
-  /**
-   * Selects all elements that match the specified selector within the Element.
-   * @param {HTMLElement} element - The Element to search.
-   * @param {string} selector - A CSS selector string.
-   */
-  selectAll(element, selector) {
-    return element.querySelectorAll(selector);
-  },
-
-  /**
-   * Adds an event listener to the element.
-   * @param {HTMLElement} element - The Element to add the event listener to.
-   * @param {string} event - The event type to listen for.
-   * @param {function} handler - The event handler function.
-   */
-  on(element, event, handler) {
-    element.addEventListener(event, handler);
-  },
-
-  /**
-   * Removes an event listener from the element.
-   * @param {HTMLElement} element - The Element to remove the event listener from.
-   * @param {string} event - The event type to stop listening for.
-   * @param {function} handler - The event handler function.
-   */
-  off(element, event, handler) {
-    element.removeEventListener(event, handler);
-  },
-
-  /**
    * Wraps an HTML Element with getters and setters for the observed properties.
    * @param {HTMLElement} element - The HTML element to wrap.
    * @param {string[]} observe - Property names to observe and wrap.
