@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Undo Redo Prototype</title>
-    <link rel="stylesheet" href="demos/common/styles.css">
+    <title>Rewind – Composite Board</title>
+    <link rel="stylesheet" href="../common/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -18,9 +18,14 @@
   </head>
   <body>
     <main>
+      <header>
+        <span class="intro">Demo 5</span>
+        <h1>Composite Board</h1>
+        <p>The board is rewindable and tiles are rewindable. Tiles can be added, removed, and rearranged. Tiles record every change that is made, while the board records only those changes that are explicitly recorded or that occur when a tile loses focus.</p>
+      </header>
       <section id="help">
         <section>
-          <h2>RewindTile</h2>
+          <h2>Rewind Tile</h2>
           <ul>
             <li>
               <kbd>↑</kbd>,
@@ -76,13 +81,13 @@
         </section>
       </section>
       <gx-shell
-      ><gx-board id="board-1">
+      ><gx-composite-board id="board-1">
           <gx-tile top="80" left="20" label="a"></gx-tile>
           <gx-tile top="120" left="120" label="b"></gx-tile>
           <gx-tile top="240" left="120" label="c"></gx-tile>
           <gx-tile top="280" left="260" label="d"></gx-tile>
-        </gx-board></gx-shell>
+        </gx-composite-board></gx-shell>
     </main>
   </body>
-  <script type="module" src="script.js"></script>
+  <script type="module" src="index.js"></script>
 </html>

@@ -1,5 +1,6 @@
 gx-board,
-gx-canvas {
+gx-canvas,
+gx-composite-board {
   width: 375px;
   height: 375px;
   border: 2px solid var(--border-000);

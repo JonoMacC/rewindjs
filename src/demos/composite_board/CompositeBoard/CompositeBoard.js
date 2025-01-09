@@ -1,8 +1,8 @@
-import rewind from "../Rewind/rewind.js";
-import RewindTile from "../demos/tiles/RewindTile/RewindTile.js";
+import rewind from "../../../Rewind/rewind.js";
+import RewindTile from "../../tiles/RewindTile/RewindTile.js";
 
 // Utilities
-import cel from "../lib/celerity/cel.js";
+import cel from "../../../lib/celerity/cel.js";
 
 class BaseBoard extends HTMLElement {
   #keyMap = {
@@ -85,6 +85,6 @@ class BaseBoard extends HTMLElement {
   }
 }
 
-const Board = rewind(BaseBoard);
+const CompositeBoard = rewind(BaseBoard);
 
-customElements.define("gx-board", Board);
+customElements.define("gx-composite-board", CompositeBoard);
