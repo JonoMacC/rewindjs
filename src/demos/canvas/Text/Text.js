@@ -1,4 +1,4 @@
-import rewind from "../../../Rewind/rewind.js";
+import { rewindElement } from "../../../Rewind/rewind.js";
 
 // Utilities
 import cel from "../../../lib/celerity/cel.js";
@@ -178,7 +178,7 @@ class TextBase extends HTMLElement {
 }
 
 // Create the rewindable text class
-const Text = rewind(TextBase, {
+const Text = rewindElement(TextBase, {
   observe: ["content"],
   debounce: {
     content: 400,

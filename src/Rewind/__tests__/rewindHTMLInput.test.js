@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Window } from "happy-dom";
-import rewind from "../rewind.js";
+import { rewindHTMLInput } from "../rewind.js";
 
 // Set up a DOM environment
 const window = new Window();
@@ -19,14 +19,14 @@ textTemplate.type = 'text';
 const checkboxTemplate = document.createElement('input');
 checkboxTemplate.type = 'checkbox';
 
-RewindableText = rewind(textTemplate, {
+RewindableText = rewindHTMLInput(textTemplate, {
   observe: ["value"],
   debounce: {
     value: 400,
   },
 });
 
-RewindableCheckbox = rewind(checkboxTemplate, {
+RewindableCheckbox = rewindHTMLInput(checkboxTemplate, {
   observe: ["checked"],
 });
 

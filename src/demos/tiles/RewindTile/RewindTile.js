@@ -1,8 +1,8 @@
-import rewind from "../../../Rewind/rewind.js";
+import { rewindElement } from "../../../Rewind/rewind.js";
 import Tile from "../../common/Tile/Tile.js";
 
 // Create the rewindable tile class (RewindTile + Undo/Redo)
-const RewindTile = rewind(Tile, {
+const RewindTile = rewindElement(Tile, {
   observe: ["top", "left", "label"],
 });
 

@@ -1,4 +1,4 @@
-import rewind from "../../../Rewind/rewind.js";
+import { rewindElement } from "../../../Rewind/rewind.js";
 import RewindTile from "../../tiles/RewindTile/RewindTile.js";
 
 // Utilities
@@ -85,6 +85,6 @@ class BaseBoard extends HTMLElement {
   }
 }
 
-const CompositeBoard = rewind(BaseBoard);
+const CompositeBoard = rewindElement(BaseBoard);
 
 customElements.define("gx-composite-board", CompositeBoard);
