@@ -15,6 +15,7 @@ class Tile extends HTMLElement {
   #alphaNumKeys = /^[0-9a-zA-Z]$/;
   #keyHandlers;
   #step = 10;
+  #current = false;
 
   constructor() {
     super();
@@ -59,6 +60,18 @@ class Tile extends HTMLElement {
   }
 
   // Accessors
+
+  set current(value) {
+    if (this.#current === value) return;
+    this.#current = value;
+    if (value) {
+      this.focus();
+    }
+  }
+
+  get current() {
+    return this.#current;
+  }
 
   set top(value) {
     if (this.style.top === `${value}px`) return;
