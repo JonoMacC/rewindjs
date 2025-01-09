@@ -233,9 +233,6 @@ class BaseCanvas extends HTMLElement {
     const left = Math.floor(this.offsetWidth / 2 - nodeWidth / 2);
     const id = cel.randomId();
 
-    // Focus the board (removes focus from current node)
-    this.focus();
-
     const nodes = new Map(this.nodes);
 
     // Remove focus from current node
