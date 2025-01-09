@@ -188,6 +188,8 @@ class BaseBoard extends HTMLElement {
   insertTile() {
     const tileWidth = 80;
     const tileHeight = 80;
+    const top = Math.floor(this.offsetHeight / 2 - tileHeight / 2);
+    const left = Math.floor(this.offsetWidth / 2 - tileWidth / 2);
     const id = cel.randomId();
 
     const tiles = new Map(this.tiles);
@@ -201,8 +203,8 @@ class BaseBoard extends HTMLElement {
     }
 
     tiles.set(id, {
-      top: this.offsetHeight / 2 - tileHeight / 2,
-      left: this.offsetWidth / 2 - tileWidth / 2,
+      top,
+      left,
       label: cel.alphaLabel(this.children.length + 1),
       current: true,
       position: this.children.length
