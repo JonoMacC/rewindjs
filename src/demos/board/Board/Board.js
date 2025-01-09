@@ -45,7 +45,6 @@ class BaseBoard extends HTMLElement {
     }
 
     // Add or update tiles
-    let hasCurrentTile = false;
     for (const [id, props] of newTiles) {
       let tile = this.querySelector(`#${id}`);
 
@@ -58,19 +57,10 @@ class BaseBoard extends HTMLElement {
         this.insertBefore(tile, this.children[position]);
       }
 
-      tile.style.top = props.top + 'px';
-      tile.style.left = props.left + 'px';
-      tile.label = props.label;
-
-      if (props.current) {
-        tile.focus();
-        hasCurrentTile = true;
+      // Set properties on the tile
+      for (const [key, value] of Object.entries(props)) {
+        tile[key] = value;
       }
-    }
-
-    // If no tile is current in state, focus the board
-    if (!hasCurrentTile) {
-      this.focus();
     }
 
     this.#tiles = newTiles;
@@ -84,6 +74,7 @@ class BaseBoard extends HTMLElement {
 
   connectedCallback() {
     this.addEventListener("keydown", this.#handleKeydown);
+    this.addEventListener('focusin', this.#handleFocusin);
     this.addEventListener("change", this.#handleChange);
 
     this.#tiles = new Map(
@@ -93,8 +84,8 @@ class BaseBoard extends HTMLElement {
           top: parseFloat(tile.style.top),
           left: parseFloat(tile.style.left),
           label: tile.label,
-          current: tile.matches(':focus'),
-          position: Array.from(this.querySelectorAll('gx-tile')).indexOf(tile)
+          current: tile.current,
+          position: Array.from(this.children).indexOf(tile)
         }
       ])
     );
@@ -102,6 +93,7 @@ class BaseBoard extends HTMLElement {
 
   disconnectedCallback() {
     this.removeEventListener("keydown", this.#handleKeydown);
+    this.removeEventListener('focusin', this.#handleFocusin);
     this.removeEventListener("change", this.#handleChange);
   }
 
@@ -116,6 +108,32 @@ class BaseBoard extends HTMLElement {
         this.keyHandlers[action]();
         return;
       }
+    }
+  }
+
+  #handleFocusin(event) {
+    const tile = event.target.closest('gx-tile');
+
+    // If the event target is not a tile, do nothing
+    if (event.target !== tile) return;
+
+    // If the tile is already current, do nothing
+    if (tile.current) return;
+
+    // Otherwise, mark the tile as current and the previous tile as not current
+    const currentTile = event.relatedTarget?.closest('gx-tile');
+    if (currentTile) {
+      const tiles = new Map(this.tiles);
+
+      currentTile.current = false;
+      tiles.set(currentTile.id, { ...tiles.get(currentTile.id), current: false });
+
+      tile.current = true;
+      tiles.set(tile.id, { ...tiles.get(tile.id), current: true });
+
+      this.tiles = tiles;
+    } else {
+      this.#updateTile(tile.id, { current: true });
     }
   }
 
@@ -163,6 +181,15 @@ class BaseBoard extends HTMLElement {
     this.focus();
 
     const tiles = new Map(this.tiles);
+
+    // Remove focus from current tile
+    if (this.currentTile) {
+      tiles.set(this.currentTile.id, {
+        ...tiles.get(this.currentTile.id),
+        current: false
+      });
+    }
+
     tiles.set(id, {
       top: this.offsetHeight / 2 - tileHeight / 2,
       left: this.offsetWidth / 2 - tileWidth / 2,
