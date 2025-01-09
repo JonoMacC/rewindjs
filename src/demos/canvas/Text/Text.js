@@ -16,12 +16,13 @@ class TextBase extends HTMLElement {
 
   constructor() {
     super();
-    this.tabIndex = 0;
 
     // Initialize DOM properties
     this.tabIndex = -1;
     this.contentEditable = true;
     this.id = cel.randomId();
+
+    // Initialize key set
     this.#keys = new Set(Object.values(this.#keyMap).flat());
 
     // Initialize properties with attribute values or defaults
@@ -29,6 +30,7 @@ class TextBase extends HTMLElement {
       this.getAttribute("content") !== null ? this.getAttribute("content") : "";
     this.#submission = this.#content;
 
+    // Initialize key handlers
     this.#keyHandlers = {
       submitKey: this.#handleSubmit,
       cancelKey: this.#handleCancel,
@@ -52,12 +54,14 @@ class TextBase extends HTMLElement {
   connectedCallback() {
     this.#render();
 
+    // Add event listeners
     this.addEventListener("keydown", this.#handleKeydown);
     this.addEventListener('focusout', this.#handleFocusout);
     this.addEventListener("input", this.#handleInput);
   }
 
   disconnectedCallback() {
+    // Remove event listeners
     this.removeEventListener("keydown", this.#handleKeydown);
     this.removeEventListener('focusout', this.#handleFocusout);
     this.removeEventListener("input", this.#handleInput);
@@ -104,6 +108,10 @@ class TextBase extends HTMLElement {
     selection.addRange(newRange);
   }
 
+  /**
+   * Handles keydown events and triggers the appropriate action from the keyHandlers map
+   * @param {KeyboardEvent} event - The keydown event
+   */
   #handleKeydown = (event) => {
     const key = cel.keyCombo(event);
     if (!this.#keys.has(key)) return;
@@ -116,6 +124,10 @@ class TextBase extends HTMLElement {
     }
   }
 
+  /**
+   * Keeps the content in state in sync with the input as the user types
+   * @param {InputEvent} event - The input event
+   */
   #handleInput = (event) => {
     // Set the content to the input value
     this.content = event.target.textContent;
@@ -125,12 +137,20 @@ class TextBase extends HTMLElement {
     this.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
+  /**
+   * When the user cancels editing, focusout the target and focus the parent
+   * @param {KeyboardEvent} event - The keyboard event
+   */
   #handleCancel = (event) => {
     // Focusout the target and focus the parent
     event.target.blur();
     event.target.parentElement.focus();
   }
 
+  /**
+   * When the user submits the text, trigger the change event and focusout the target and focus the parent
+   * @param {KeyboardEvent} event - The keyboard event
+   */
   #handleSubmit = (event) => {
     event.preventDefault();
 
@@ -151,7 +171,7 @@ const Text = rewind(TextBase, {
   },
 });
 
-// Define the text as a custom element
+// Define as a custom element
 customElements.define("gx-text", Text);
 
 export default Text;
