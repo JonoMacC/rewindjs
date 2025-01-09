@@ -188,9 +188,6 @@ class BaseBoard extends HTMLElement {
       current: true,
     });
 
-    // Set tiles to ensure the current state is recorded
-    this.tiles = new Map(tiles);
-
     // Remove tile
     tiles.delete(tile.id);
 
