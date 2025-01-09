@@ -14,9 +14,15 @@ class BaseBoard extends HTMLElement {
 
   constructor() {
     super();
+
+    // Initialize DOM properties
     this.tabIndex = 0;
     this.id = cel.randomId();
+
+    // Initialize key set
     this.#keys = new Set(Object.values(this.#keyMap).flat());
+
+    // Initialize key handlers
     this.keyHandlers = {
       insertKey: this.insertTile.bind(this),
       deleteKey: this.delete.bind(this),
@@ -48,6 +54,7 @@ class BaseBoard extends HTMLElement {
     for (const [id, props] of newTiles) {
       let tile = this.querySelector(`#${id}`);
 
+      // If the tile does not exist in the DOM, create it
       if (!tile) {
         tile = new Tile();
         tile.id = id;
@@ -73,10 +80,12 @@ class BaseBoard extends HTMLElement {
   // Lifecycle
 
   connectedCallback() {
+    // Add event listeners
     this.addEventListener("keydown", this.#handleKeydown);
     this.addEventListener('focusin', this.#handleFocusin);
     this.addEventListener("change", this.#handleChange);
 
+    // Initialize tiles from DOM
     this.#tiles = new Map(
       Array.from(this.querySelectorAll('gx-tile'), (tile) => [
         tile.id,
@@ -92,6 +101,7 @@ class BaseBoard extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // Remove event listeners
     this.removeEventListener("keydown", this.#handleKeydown);
     this.removeEventListener('focusin', this.#handleFocusin);
     this.removeEventListener("change", this.#handleChange);
