@@ -4,8 +4,6 @@ import TextNode from "../TextNode/TextNode.js";
 // Utilities
 import cel from "../../../lib/celerity/cel.js";
 
-// TODO: Isolate handling of content undo/redo to Text
-// TODO: Manage Text as Rewindables
 class BaseCanvas extends HTMLElement {
   #keyMap = {
     insertKey: ["Shift+Enter"],
@@ -16,9 +14,15 @@ class BaseCanvas extends HTMLElement {
 
   constructor() {
     super();
+
+    // Initialize DOM properties
     this.tabIndex = 0;
     this.id = cel.randomId();
+
+    // Initialize key set
     this.#keys = new Set(Object.values(this.#keyMap).flat());
+
+    // Initialize key handlers
     this.keyHandlers = {
       insertKey: (event) => {
         event.preventDefault();
@@ -53,6 +57,7 @@ class BaseCanvas extends HTMLElement {
     for (const [id, props] of newNodes) {
       let node = this.querySelector(`#${id}`);
 
+      // If the node does not exist in the DOM, create it
       if (!node) {
         const history = props.rewindHistory;
         const index = props.rewindIndex;
@@ -91,10 +96,12 @@ class BaseCanvas extends HTMLElement {
   // Lifecycle
 
   connectedCallback() {
+    // Add event listeners
     this.addEventListener("keydown", this.#handleKeydown);
     this.addEventListener('focusin', this.#handleFocusin);
     this.addEventListener("change", this.#debouncedChange);
 
+    // Initialize nodes from DOM
     this.#nodes = new Map(
       Array.from(this.querySelectorAll('gx-text-node'), (node) => [
         node.id,
@@ -112,6 +119,7 @@ class BaseCanvas extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // Remove event listeners
     this.removeEventListener("keydown", this.#handleKeydown);
     this.removeEventListener('focusin', this.#handleFocusin);
     this.removeEventListener("change", this.#debouncedChange);
