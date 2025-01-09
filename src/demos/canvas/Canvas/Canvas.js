@@ -271,9 +271,6 @@ class BaseCanvas extends HTMLElement {
       current: true,
     });
 
-    // Set nodes to ensure the current state is recorded
-    this.nodes = new Map(nodes);
-
     // Remove node
     nodes.delete(node.id);
 
