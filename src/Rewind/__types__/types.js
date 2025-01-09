@@ -60,3 +60,34 @@
 /**
  * @typedef {Map<string, Rewindable|RewindableElement>} RewindCollection
  */
+
+// TODO: Fix type definitions for Rewindable and RewindableElement
+
+// Function overload definitions
+/**
+ * @template {typeof Object} T
+ * @callback RewindClassOverload
+ * @param {T} Base
+ * @param {RewindOptions} [options]
+ * @returns {typeof Rewindable}
+ */
+
+/**
+ * @template {typeof HTMLElement} T
+ * @callback RewindElementOverload
+ * @param {T} Base
+ * @param {RewindElementOptions} [options]
+ * @returns {typeof RewindableElement}
+ */
+
+/**
+ * @callback RewindInstanceOverload
+ * @param {HTMLElement} template
+ * @param {RewindElementOptions} [options]
+ * @returns {typeof RewindableElement}
+ */
+
+/**
+ * @type {RewindClassOverload & RewindElementOverload & RewindInstanceOverload}
+ */
+export const rewind = null; // This is just for type definition, not actual code
