@@ -47,7 +47,6 @@ class BaseCanvas extends HTMLElement {
     }
 
     // Add or update nodes
-    let hasCurrentNode = false;
     for (const [id, props] of newNodes) {
       let node = this.querySelector(`#${id}`);
 
@@ -67,18 +66,16 @@ class BaseCanvas extends HTMLElement {
         this.insertBefore(node, this.children[position]);
       }
 
-      node.style.top = props.top + 'px';
-      node.style.left = props.left + 'px';
+      // Set the node properties
+      for (const [key, value] of Object.entries(props)) {
+        // Skip over setting rewind history and index, these are only
+        // set during initialization
+        if (key === "rewindHistory" || key === "rewindIndex") {
+          continue;
+        }
 
-      if (props.current) {
-        node.focus();
-        hasCurrentNode = true;
+        node[key] = value;
       }
-    }
-
-    // If no node is current in state, focus the board
-    if (!hasCurrentNode) {
-      this.focus();
     }
 
     this.#nodes = newNodes;
@@ -92,6 +89,7 @@ class BaseCanvas extends HTMLElement {
 
   connectedCallback() {
     this.addEventListener("keydown", this.#handleKeydown);
+    this.addEventListener('focusin', this.#handleFocusin);
     this.addEventListener("change", this.#debouncedChange);
 
     this.#nodes = new Map(
@@ -102,6 +100,7 @@ class BaseCanvas extends HTMLElement {
           left: parseFloat(node.style.left),
           content: node.content,
           current: node.matches(':focus'),
+          current: node.current,
           position: Array.from(this.children).indexOf(node)
         }
       ])
@@ -110,6 +109,7 @@ class BaseCanvas extends HTMLElement {
 
   disconnectedCallback() {
     this.removeEventListener("keydown", this.#handleKeydown);
+    this.removeEventListener('focusin', this.#handleFocusin);
     this.removeEventListener("change", this.#debouncedChange);
   }
 
@@ -127,6 +127,31 @@ class BaseCanvas extends HTMLElement {
     }
   }
 
+  #handleFocusin = (event) => {
+    const node = event.target.closest('gx-text-node');
+
+    // If the event target is not a node, ignore
+    if (event.target !== node) return;
+
+    // If the node is already current, ignore
+    if (node.current) return;
+
+    const currentNode = event.relatedTarget?.closest('gx-text-node');
+    if (currentNode) {
+      const nodes = new Map(this.nodes);
+
+      currentNode.current = false;
+      nodes.set(currentNode.id, { ...nodes.get(currentNode.id), current: false });
+
+      node.current = true;
+      nodes.set(node.id, { ...nodes.get(node.id), current: true });
+
+      this.nodes = nodes;
+    } else {
+      this.#updateNode(node.id, { current: true });
+    }
+  }
+
   #handleChange = (event) => {
     const node = event.target.closest('gx-text-node');
 
@@ -135,6 +160,7 @@ class BaseCanvas extends HTMLElement {
       left,
       content: node.content,
       current: node.matches(':focus')
+      current: node.current,
     });
   }
 
@@ -170,6 +196,16 @@ class BaseCanvas extends HTMLElement {
     this.focus();
 
     const nodes = new Map(this.nodes);
+
+    // Remove focus from current node
+    if (this.currentNode) {
+      this.currentNode.current = false;
+      nodes.set(this.currentNode.id, {
+        ...nodes.get(this.currentNode.id),
+        current: false
+      });
+    }
+
     nodes.set(id, {
       top: this.offsetHeight / 2 - nodeHeight / 2,
       left: this.offsetWidth / 2 - nodeWidth / 2,
