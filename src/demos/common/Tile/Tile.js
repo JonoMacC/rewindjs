@@ -101,7 +101,7 @@ class Tile extends HTMLElement {
 
   // Private methods
 
-  #handleKeydown(event) {
+  #handleKeydown = (event) => {
     // Handle keys that will trigger relabeling a tile
     if (this.#alphaNumKeys.test(event.key)
       && !(event.ctrlKey || event.metaKey)) {
@@ -119,7 +119,7 @@ class Tile extends HTMLElement {
     }
   }
 
-  #handleChange() {
+  #handleChange = () => {
     const event = new Event("change", {
       bubbles: true,
       cancelable: true,
