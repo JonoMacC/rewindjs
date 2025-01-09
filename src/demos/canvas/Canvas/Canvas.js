@@ -85,7 +85,7 @@ class BaseCanvas extends HTMLElement {
   }
 
   get currentNode() {
-    return this.querySelector('gx-text:focus');
+    return this.querySelector('gx-text-node:focus-within');
   }
 
   // Lifecycle
@@ -95,7 +95,7 @@ class BaseCanvas extends HTMLElement {
     this.addEventListener("change", this.#debouncedChange);
 
     this.#nodes = new Map(
-      Array.from(this.querySelectorAll('gx-text'), (node) => [
+      Array.from(this.querySelectorAll('gx-text-node'), (node) => [
         node.id,
         {
           top: parseFloat(node.style.top),
@@ -128,9 +128,7 @@ class BaseCanvas extends HTMLElement {
   }
 
   #handleChange = (event) => {
-    const node = event.target.closest('gx-text');
-    const top = parseFloat(node.style.top);
-    const left = parseFloat(node.style.left);
+    const node = event.target.closest('gx-text-node');
 
     this.#updateNode(node.id, {
       top,
