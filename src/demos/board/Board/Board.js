@@ -156,12 +156,27 @@ class BaseBoard extends HTMLElement {
   #updateTile(id, props) {
     const tiles = new Map(this.tiles);
     const tile = this.querySelector(`#${id}`);
-    
-    if (props.top !== undefined) tile.style.top = props.top + 'px';
-    if (props.left !== undefined) tile.style.left = props.left + 'px';
-    if (props.label !== undefined) tile.label = props.label;
-    
-    tiles.set(id, { ...props });
+
+    if (!tile) {
+      throw new Error(`Tile with id ${id} not found`);
+    }
+
+    // Get existing tile data
+    const tileData = tiles.get(id) || {};
+
+    // Merge new props with existing tile data, only updating provided values
+    const updatedProps = { ...tileData, ...props };
+
+    // Update the tile element in DOM
+    for (const [key, value] of Object.entries(updatedProps)) {
+      if (value === undefined) continue;
+
+      tile[key] = value;
+    }
+
+    // Store the complete updated state
+    tiles.set(id, updatedProps);
+
     this.tiles = tiles;
   }
 
