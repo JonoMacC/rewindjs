@@ -222,8 +222,10 @@ class BaseCanvas extends HTMLElement {
    * Adds a new node to the state
    */
   insertNode() {
-    const nodeWidth = 80;
-    const nodeHeight = 80;
+    const nodeWidth = 30;
+    const nodeHeight = 34;
+    const top = Math.floor(this.offsetHeight / 2 - nodeHeight / 2);
+    const left = Math.floor(this.offsetWidth / 2 - nodeWidth / 2);
     const id = cel.randomId();
 
     // Focus the board (removes focus from current node)
@@ -241,8 +243,8 @@ class BaseCanvas extends HTMLElement {
     }
 
     nodes.set(id, {
-      top: this.offsetHeight / 2 - nodeHeight / 2,
-      left: this.offsetWidth / 2 - nodeWidth / 2,
+      top,
+      left,
       content: "",
       current: true,
       position: this.children.length
