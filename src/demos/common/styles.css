@@ -4,7 +4,7 @@
 
 /* Components */
 @import url("Tile/Tile.css") layer(components.tile);
-@import url("Text/Text.css") layer(components.text);
+@import url("TextNode/TextNode.css") layer(components.text);
 @import url("Board/Board.css") layer(components.board);
 @import url("Shell/Shell.css") layer(components.shell);
 @import url("app.css") layer(components.app);

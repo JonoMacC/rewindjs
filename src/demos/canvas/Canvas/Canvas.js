@@ -1,5 +1,5 @@
 import rewind from "../../../Rewind/rewind.js";
-import Text from "../Text/Text.js";
+import TextNode from "../TextNode/TextNode.js";
 
 // Utilities
 import cel from "../../../lib/celerity/cel.js";
@@ -52,7 +52,14 @@ class BaseCanvas extends HTMLElement {
       let node = this.querySelector(`#${id}`);
 
       if (!node) {
-        node = new Text();
+        const history = props.rewindHistory;
+        const index = props.rewindIndex;
+
+        // Initialize the text node with rewind history and index if available
+        node = new TextNode({
+          history,
+          index
+        });
         node.id = id;
 
         // Get the position
