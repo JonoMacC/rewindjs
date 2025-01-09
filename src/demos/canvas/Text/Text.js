@@ -133,7 +133,21 @@ class TextBase extends HTMLElement {
     this.content = event.target.textContent;
   }
 
+  /**
+   * Triggers the change event if the content has changed on focusout
+   */
+  #handleFocusout = () => {
+    // If the content has changed, trigger the change event
+    if (this.#submission !== this.#content) {
+      this.#handleChange();
+    }
+  }
+
+  /**
+   * Dispatches a change event and updates the submission to match the content
+   */
   #handleChange = () => {
+    this.#submission = this.content;
     this.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
