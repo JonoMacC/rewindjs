@@ -20,8 +20,11 @@ class BaseCanvas extends HTMLElement {
     this.id = cel.randomId();
     this.#keys = new Set(Object.values(this.#keyMap).flat());
     this.keyHandlers = {
-      insertKey: this.insertNode.bind(this),
-      deleteKey: this.delete.bind(this),
+      insertKey: (event) => {
+        event.preventDefault();
+        this.insertNode();
+      },
+      deleteKey: (event) => this.#handleDelete(event),
     };
   }
 
@@ -122,7 +125,7 @@ class BaseCanvas extends HTMLElement {
 
     for (const [action, keys] of Object.entries(this.#keyMap)) {
       if (keys.includes(key)) {
-        this.keyHandlers[action]();
+        this.keyHandlers[action](event);
         return;
       }
     }
@@ -164,6 +167,13 @@ class BaseCanvas extends HTMLElement {
       rewindHistory: [...node.rewindHistory],
       rewindIndex: node.rewindIndex
     });
+  }
+
+  #handleDelete = (event) => {
+    const node = event.target.closest('gx-text-node');
+    if (event.target !== node) return;
+
+    this.delete(node.id);
   }
 
   #debouncedChange = cel.debounce(this.#handleChange, 400);
