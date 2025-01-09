@@ -261,22 +261,23 @@ class BaseCanvas extends HTMLElement {
   }
 
   /**
-   * Deletes the current node
+   * Deletes the node
+   * @param {string} id - Unique identifier for the node
    */
-  delete() {
-    const node = this.currentNode;
+  delete(id) {
+    const node = this.querySelector(`#${id}`);
     if (!node) return;
 
     const nodes = new Map(this.nodes);
 
     // Ensure the current node is set in state
-    nodes.set(node.id, {
-      ...nodes.get(node.id),
+    nodes.set(id, {
+      ...nodes.get(id),
       current: true,
     });
 
     // Remove node
-    nodes.delete(node.id);
+    nodes.delete(id);
 
     // Set previous node as current if any, fallback to last child (if not the deleted node)
     const prev = node.previousElementSibling ??
