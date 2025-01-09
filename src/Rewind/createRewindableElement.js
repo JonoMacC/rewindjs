@@ -14,7 +14,7 @@ import './__types__/types.js';
  *
  * @param {typeof HTMLElement} TargetClass - The class to extend.
  * @param {RewindElementOptions} rewindOptions - Options for the Rewindable class.
- * @returns {typeof TargetClass} A new class that extends TargetClass with undo/redo functionality.
+ * @returns {typeof RewindableElement} A new class that extends TargetClass with undo/redo functionality.
  *
  * @example
  * class Counter extends HTMLElement {
