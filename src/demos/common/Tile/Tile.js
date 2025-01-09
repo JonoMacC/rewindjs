@@ -17,8 +17,12 @@ class Tile extends HTMLElement {
 
   constructor() {
     super();
+
+    // Initialize DOM properties
     this.tabIndex = 0;
     this.id = cel.randomId();
+
+    // Initialize key set
     this.#keys = new Set(Object.values(this.#keyMap).flat());
 
     // Initialize properties with attribute values or defaults
@@ -33,6 +37,7 @@ class Tile extends HTMLElement {
     this.label =
       this.getAttribute("label") !== null ? this.getAttribute("label") : "";
 
+    // Initialize key handlers
     this.#keyHandlers = {
       upKey: () => {
         this.top -= this.#step;
@@ -101,11 +106,13 @@ class Tile extends HTMLElement {
   // Lifecycle
 
   connectedCallback() {
+    // Add event listeners
     this.addEventListener("keydown", this.#handleKeydown);
     this.addEventListener('focusout', this.#handleChange);
   }
 
   disconnectedCallback() {
+    // Remove event listeners
     this.removeEventListener("keydown", this.#handleKeydown);
     this.removeEventListener('focusout', this.#handleChange);
   }
