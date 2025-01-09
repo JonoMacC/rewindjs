@@ -186,11 +186,33 @@ class BaseCanvas extends HTMLElement {
   #updateNode = (id, props) => {
     const nodes = new Map(this.nodes);
     const node = this.querySelector(`#${id}`);
-    
-    if (props.top !== undefined) node.style.top = props.top + 'px';
-    if (props.left !== undefined) node.style.left = props.left + 'px';
-    
-    nodes.set(id, { ...props, position: Array.from(this.children).indexOf(node) });
+
+    if (!node) {
+      throw new Error(`Node with id ${id} not found`);
+    }
+
+    // Get existing node data
+    const nodeData = nodes.get(id) || {};
+
+    // Merge new props with existing data, only updating provided values
+    const updatedProps = { ...nodeData, ...props };
+
+    // Update DOM node properties
+    for (const [key, value] of Object.entries(updatedProps)) {
+      if (key === 'rewindHistory' || key === 'rewindIndex' || key === 'position') {
+        continue;
+      }
+
+      if (value === undefined) {
+        continue;
+      }
+
+      node[key] = value;
+    }
+
+    // Store the complete updated state
+    nodes.set(id, updatedProps);
+
     this.nodes = nodes;
   }
 
