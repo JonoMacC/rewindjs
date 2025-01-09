@@ -14,22 +14,6 @@ import './__types__/types.js';
  * @param {RewindOptions} [options={}] - Options for the Rewindable class.
  * @returns {typeof Rewindable} A new class extending the target with undo/redo functionality.
  *
- * @example
- * class Counter {
- *  #count = 0;
- *
- *  get count() { return this.#count; }
- *  set count(value) { this.#count = value; }
- * }
- *
- * const RewindableCounter = rewind(Counter, {
- *  observe: ['count']
- * });
- *
- * const counter = new RewindableCounter();
- * counter.count = 5;  // Recorded
- * counter.undo();  // Returns to 0
- * counter.redo();  // Returns to 5
  */
 export function rewind(BaseClass, options = {}) {
   return createRewindable(BaseClass, options);
@@ -42,38 +26,6 @@ export function rewind(BaseClass, options = {}) {
  * @param {RewindElementOptions} [options={}] - Options for the RewindableElement class.
  * @returns {typeof RewindableElement} A new class extending the target with undo/redo functionality.
  *
- * @example
- * class Counter extends HTMLElement {
- *  #count = 0;
- *
- *  constructor() {
- *    super();
- *    this.tabIndex = 0;
- *  }
- *
- *  get count() { return this.#count; }
- *  set count(value) { this.#count = value; }
- *
- *  connectedCallback() {
- *    this.#render();
- *  }
- *
- *  #render {
- *    this.innerHTML = `<output>${this.#count}</output>`;
- *  }
- * }
- *
- * const RewindableCounter = rewind(Counter, {
- *  observe: ['count']
- * });
- *
- * const counter = new RewindableCounter();
- * document.body.appendChild(counter);
- * counter.count = 5;  // Recorded, displays 5
- * counter.undo();  // Returns to 0, displays 0
- * counter.redo();  // Returns to 5, displays 5
- * counter.dispatchEvent(new KeyboardEvent('keydown', {key: 'z', ctrlKey: true})); // Returns to 0, displays 0
- * counter.dispatchEvent(new KeyboardEvent('keydown', {key: 'y', ctrlKey: true})); // Returns to 5, displays 5
  */
 export function rewindElement(BaseClass, options = {}) {
   return createRewindableElement(BaseClass, options);
