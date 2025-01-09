@@ -99,8 +99,9 @@ class BaseCanvas extends HTMLElement {
           top: parseFloat(node.style.top),
           left: parseFloat(node.style.left),
           content: node.content,
-          current: node.matches(':focus'),
           current: node.current,
+          rewindHistory: [...node.rewindHistory],
+          rewindIndex: node.rewindIndex,
           position: Array.from(this.children).indexOf(node)
         }
       ])
@@ -159,8 +160,9 @@ class BaseCanvas extends HTMLElement {
       top,
       left,
       content: node.content,
-      current: node.matches(':focus')
       current: node.current,
+      rewindHistory: [...node.rewindHistory],
+      rewindIndex: node.rewindIndex
     });
   }
 
