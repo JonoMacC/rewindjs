@@ -190,9 +190,6 @@ class BaseBoard extends HTMLElement {
     const tileHeight = 80;
     const id = cel.randomId();
 
-    // Focus the board (removes focus from current tile)
-    this.focus();
-
     const tiles = new Map(this.tiles);
 
     // Remove focus from current tile
