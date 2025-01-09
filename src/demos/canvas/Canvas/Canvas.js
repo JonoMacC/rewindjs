@@ -216,6 +216,11 @@ class BaseCanvas extends HTMLElement {
     this.nodes = nodes;
   }
 
+  #refocus() {
+    if (this.currentNode) return;
+    this.focus();
+  }
+
   // Public methods
 
   /**
@@ -287,6 +292,8 @@ class BaseCanvas extends HTMLElement {
     }
 
     this.nodes = nodes;
+
+    this.#refocus();
   }
 }
 
