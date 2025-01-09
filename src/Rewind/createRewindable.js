@@ -111,7 +111,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         if (!this.rewindState.children.has(id)) {
           const lastHistory = this.#lastChildHistory(id);
           if (lastHistory) {
-            state.history = cel.mergeHistories(
+            state.history = cel.reconcile(
               state.history,
               lastHistory
             );

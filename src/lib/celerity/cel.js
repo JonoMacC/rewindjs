@@ -634,13 +634,13 @@ const cel = {
   },
 
   /**
-   * Merges two histories
+   * Reconciles two divergent histories
    *
    * @param {any[]} a - First history
    * @param {any[]} b - Second history
    * @returns {any[]} Merged history
    */
-  mergeHistories(a, b) {
+  reconcile(a, b) {
     if (b === undefined || b === null) return a;
     // Find the last common state between the two histories
     const lastCommonIndex =
