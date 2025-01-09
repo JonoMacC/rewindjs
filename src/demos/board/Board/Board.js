@@ -81,8 +81,8 @@ class BaseBoard extends HTMLElement {
       Array.from(this.querySelectorAll('gx-tile'), (tile) => [
         tile.id,
         {
-          top: parseFloat(tile.style.top),
-          left: parseFloat(tile.style.left),
+          top: tile.top,
+          left: tile.left,
           label: tile.label,
           current: tile.current,
           position: Array.from(this.children).indexOf(tile)
@@ -139,12 +139,10 @@ class BaseBoard extends HTMLElement {
 
   #handleChange = (event) => {
     const tile = event.target.closest('gx-tile');
-    const top = parseFloat(tile.style.top);
-    const left = parseFloat(tile.style.left);
 
     this.#updateTile(tile.id, {
-      top,
-      left,
+      top: tile.top,
+      left: tile.left,
       label: tile.label,
       current: tile.current
     });
