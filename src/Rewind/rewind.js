@@ -114,7 +114,7 @@ function rewindFromInstance(template, options = {}) {
  *
  * @param {typeof Object | HTMLElement} target - The base class to extend or an HTML element instance to use as a template
  * @param {RewindOptions | RewindElementOptions} [options={}] - The options for the Rewindable class
- * @returns {typeof target} A new class that extends target with undo/redo functionality
+ * @returns {typeof Object} A new class that extends target with undo/redo functionality
  *
  * @example
  * class Counter {
