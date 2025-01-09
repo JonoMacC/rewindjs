@@ -1,4 +1,4 @@
-import { rewindElement } from "../../../Rewind/rewind.js";
+import rewind from "../../../Rewind/rewind.js";
 import Tile from "../../common/Tile/Tile.js";
 
 // Utilities
@@ -261,7 +261,7 @@ class BaseBoard extends HTMLElement {
   }
 }
 
-const Board = rewindElement(BaseBoard, {
+const Board = rewind(BaseBoard, {
   observe: ["tiles"]
 });
 

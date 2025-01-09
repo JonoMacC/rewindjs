@@ -1,4 +1,4 @@
-import { rewindElement } from "../../../Rewind/rewind.js";
+import rewind from "../../../Rewind/rewind.js";
 import TextNode from "../TextNode/TextNode.js";
 
 // Utilities
@@ -303,7 +303,7 @@ class BaseCanvas extends HTMLElement {
   }
 }
 
-const Canvas = rewindElement(BaseCanvas, {
+const Canvas = rewind(BaseCanvas, {
   observe: ["nodes"]
 });
 

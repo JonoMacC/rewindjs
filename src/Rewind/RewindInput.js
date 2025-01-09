@@ -1,21 +1,21 @@
-import { rewindHTMLInput, rewindElement } from "./rewind.js";
+import rewind from "./rewind.js";
 
 const checkbox = document.createElement("input");
 checkbox.type = "checkbox";
-const RewindCheckbox = rewindHTMLInput(checkbox, {
+const RewindCheckbox = rewind(checkbox, {
   observe: ["checked", "indeterminate"],
 });
 customElements.define("rw-checkbox", RewindCheckbox);
 
 const select = document.createElement("select");
-const RewindSelect = rewindHTMLInput(select, {
+const RewindSelect = rewind(select, {
   observe: ["value"],
 });
 customElements.define("rw-select", RewindSelect);
 
 const textbox = document.createElement("input");
 textbox.type = "text";
-const RewindTextBox = rewindHTMLInput(textbox, {
+const RewindTextBox = rewind(textbox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -24,7 +24,7 @@ const RewindTextBox = rewindHTMLInput(textbox, {
 customElements.define("rw-text-box", RewindTextBox);
 
 const textarea = document.createElement("textarea");
-const RewindTextarea = rewindHTMLInput(textarea, {
+const RewindTextarea = rewind(textarea, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -34,7 +34,7 @@ customElements.define("rw-textarea", RewindTextarea);
 
 const numberbox = document.createElement("input");
 numberbox.type = "number";
-const RewindNumberBox = rewindHTMLInput(numberbox, {
+const RewindNumberBox = rewind(numberbox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -44,28 +44,28 @@ customElements.define("rw-number-box", RewindNumberBox);
 
 const colorbox = document.createElement("input");
 colorbox.type = "color";
-const RewindColorBox = rewindHTMLInput(colorbox, {
+const RewindColorBox = rewind(colorbox, {
   observe: ["value"],
 });
 customElements.define("rw-color-box", RewindColorBox);
 
 const dateBox = document.createElement("input");
 dateBox.type = "date";
-const RewindDateBox = rewindHTMLInput(dateBox, {
+const RewindDateBox = rewind(dateBox, {
   observe: ["value"],
 });
 customElements.define("rw-date-box", RewindDateBox);
 
 const dateTimeLocalBox = document.createElement("input");
 dateTimeLocalBox.type = "datetime-local";
-const RewindDateTimeLocalBox = rewindHTMLInput(dateTimeLocalBox, {
+const RewindDateTimeLocalBox = rewind(dateTimeLocalBox, {
   observe: ["value"],
 });
 customElements.define("rw-datetime-local-box", RewindDateTimeLocalBox);
 
 const emailBox = document.createElement("input");
 emailBox.type = "email";
-const RewindEmailBox = rewindHTMLInput(emailBox, {
+const RewindEmailBox = rewind(emailBox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -75,21 +75,21 @@ customElements.define("rw-email-box", RewindEmailBox);
 
 const monthBox = document.createElement("input");
 monthBox.type = "month";
-const RewindMonthBox = rewindHTMLInput(monthBox, {
+const RewindMonthBox = rewind(monthBox, {
   observe: ["value"],
 });
 customElements.define("rw-month-box", RewindMonthBox);
 
 const timeBox = document.createElement("input");
 timeBox.type = "time";
-const RewindTimeBox = rewindHTMLInput(timeBox, {
+const RewindTimeBox = rewind(timeBox, {
   observe: ["value"],
 });
 customElements.define("rw-time-box", RewindTimeBox);
 
 const passwordBox = document.createElement("input");
 passwordBox.type = "password";
-const RewindPasswordBox = rewindHTMLInput(passwordBox, {
+const RewindPasswordBox = rewind(passwordBox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -99,7 +99,7 @@ customElements.define("rw-password-box", RewindPasswordBox);
 
 const range = document.createElement("input");
 range.type = "range";
-const RewindRange = rewindHTMLInput(range, {
+const RewindRange = rewind(range, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -109,7 +109,7 @@ customElements.define("rw-range", RewindRange);
 
 const searchBox = document.createElement("input");
 searchBox.type = "search";
-const RewindSearchBox = rewindHTMLInput(searchBox, {
+const RewindSearchBox = rewind(searchBox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -119,7 +119,7 @@ customElements.define("rw-search-box", RewindSearchBox);
 
 const urlBox = document.createElement("input");
 urlBox.type = "url";
-const RewindUrlBox = rewindHTMLInput(urlBox, {
+const RewindUrlBox = rewind(urlBox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -129,7 +129,7 @@ customElements.define("rw-url-box", RewindUrlBox);
 
 const telBox = document.createElement("input");
 telBox.type = "tel";
-const RewindTelBox = rewindHTMLInput(telBox, {
+const RewindTelBox = rewind(telBox, {
   observe: ["value"],
   debounce: {
     value: 400,
@@ -139,7 +139,7 @@ customElements.define("rw-tel-box", RewindTelBox);
 
 const weekBox = document.createElement("input");
 weekBox.type = "week";
-const RewindWeekBox = rewindHTMLInput(weekBox, {
+const RewindWeekBox = rewind(weekBox, {
   observe: ["value"],
 });
 customElements.define("rw-week-box", RewindWeekBox);
@@ -186,7 +186,7 @@ class RadioGroup extends HTMLElement {
     });
   }
 }
-const RewindRadioGroup = rewindElement(RadioGroup, {
+const RewindRadioGroup = rewind(RadioGroup, {
   observe: ["value"],
 });
 customElements.define("rw-radio-group", RewindRadioGroup);

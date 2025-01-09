@@ -8,62 +8,51 @@ import cel from "../lib/celerity/cel.js";
 import './__types__/types.js';
 
 /**
- * Creates a class that extends a target class with undo/redo functionality.
+ * Creates a rewindable class with undo/redo functionality.
  *
- * @param {typeof Object} BaseClass - A base class.
- * @param {RewindOptions} [options={}] - Options for the Rewindable class.
- * @returns {typeof Rewindable} A new class extending the target with undo/redo functionality.
- *
- */
-export function rewind(BaseClass, options = {}) {
-  return createRewindable(BaseClass, options);
-}
-
-/**
- * Creates a class that extends a target web component class with undo/redo functionality.
- *
- * @param {typeof HTMLElement} BaseClass - A web component class.
- * @param {RewindElementOptions} [options={}] - Options for the RewindableElement class.
- * @returns {typeof RewindableElement} A new class extending the target with undo/redo functionality.
- *
- */
-export function rewindElement(BaseClass, options = {}) {
-  return createRewindableElement(BaseClass, options);
-}
-
-/**
- * Creates a class that extends a native HTML Input Element with undo/redo functionality using an HTML instance as the
- * template. This enables HTML inputs to use rewind functionality despite no access to their class definitions.
- *
- * @param {HTMLElement} template - The HTML element instance to use as the template
- * @param {RewindElementOptions} [options={}] - The options for the Rewindable class
- * @returns {typeof RewindableElement} A new class that extends HTMLElement with undo/redo functionality
+ * @param {typeof Object | typeof HTMLElement | HTMLElement} Base - The base class or instance to extend:
+ *   - JavaScript class (e.g., `MyClass`)
+ *   - Web Component class (e.g., `MyComponent`)
+ *   - HTML element instance (e.g., `document.createElement('input')`)
+ * @param {RewindOptions & RewindElementOptions} options - Configuration options
+ * @returns {typeof Rewindable | typeof RewindableElement} A new class with undo/redo functionality
  *
  * @example
- * const template = document.createElement('input');
- * template.type = 'text';
+ * // Basic class
+ * class Counter { ... }
+ * const RewindableCounter = rewind(Counter, { observe: ['count'] });
  *
- * const RewindTextInput = rewindFromInstance(template, {
- *   observe: ['value']
- *   debounce: {
- *     value: 400
- *   }
+ * // Web component
+ * class MyComponent extends HTMLElement { ... }
+ * const RewindableComponent = rewind(MyComponent, {
+ *   observe: ['value'],
+ *   debounce: { value: 400 }
  * });
  *
- * customElements.define('rw-text-input', RewindTextInput);
- * const rwTextInput = document.createElement('rw-text-input');
- * rwTextInput.value = 'Hello'; // Recorded
- * rwTextInput.undo(); // Returns to empty string
- * rwTextInput.redo(); // Returns to 'Hello'
+ * // HTML input
+ * const template = document.createElement('input');
+ * const RewindableInput = rewind(template, {
+ *   observe: ['value'],
+ *   debounce: { value: 400 }
+ * });
  */
-export function rewindHTMLInput(template, options = {}) {
+export function rewind(Base, options = {}) {
+  // Handle HTML element instance
   // TODO: Remove need for custom element registration by changing proxyElement if possible
-  // Create a custom element class to wrap the template
-  const BaseClass = cel.proxyElement(template, options.observe);
+  if (Base instanceof HTMLElement) {
+    const BaseClass = cel.proxyElement(Base, options.observe);
+    const id = `html-input-${cel.randomId()}`;
+    customElements.define(id, BaseClass);
+    return createRewindableElement(BaseClass, options);
+  }
 
-  // Register the custom element
-  customElements.define(`html-input-${cel.randomId()}`, BaseClass);
-  return createRewindableElement(BaseClass, options);
+  // Handle web component
+  if (Base.prototype instanceof HTMLElement) {
+    return createRewindableElement(Base, options);
+  }
+
+  // Handle regular class
+  return createRewindable(Base, options);
 }
 
 export default rewind;
