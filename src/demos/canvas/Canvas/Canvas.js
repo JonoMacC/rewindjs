@@ -96,8 +96,8 @@ class BaseCanvas extends HTMLElement {
       Array.from(this.querySelectorAll('gx-text-node'), (node) => [
         node.id,
         {
-          top: parseFloat(node.style.top),
-          left: parseFloat(node.style.left),
+          top: node.top,
+          left: node.left,
           content: node.content,
           current: node.current,
           rewindHistory: [...node.rewindHistory],
@@ -157,8 +157,8 @@ class BaseCanvas extends HTMLElement {
     const node = event.target.closest('gx-text-node');
 
     this.#updateNode(node.id, {
-      top,
-      left,
+      top: node.top,
+      left: node.left,
       content: node.content,
       current: node.current,
       rewindHistory: [...node.rewindHistory],
