@@ -180,6 +180,11 @@ class BaseBoard extends HTMLElement {
     this.tiles = tiles;
   }
 
+  #refocus() {
+    if (this.currentTile) return;
+    this.focus();
+  }
+
   // Public methods
 
   /**
@@ -241,6 +246,8 @@ class BaseBoard extends HTMLElement {
     }
 
     this.tiles = tiles;
+
+    this.#refocus();
   }
 }
 
