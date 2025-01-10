@@ -79,7 +79,7 @@ class BaseBoard extends HTMLElement {
 
   delete() {
     // Get focused tile
-    const tile = this.querySelector('gx-tile:focus');
+    const tile = this.querySelector('gx-rw-tile:focus');
     if (!tile) return;
     this.removeRewindable(tile.id);
   }
