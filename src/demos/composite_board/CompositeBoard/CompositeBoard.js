@@ -13,9 +13,15 @@ class BaseBoard extends HTMLElement {
 
   constructor() {
     super();
+
+    // Initialize DOM properties
     this.tabIndex = 0;
     this.id = cel.randomId();
+
+    // Initialize key set
     this.#keys = new Set(Object.values(this.#keyMap).flat());
+
+    // Initialize key handlers
     this.keyHandlers = {
       insertKey: this.spawnTile.bind(this),
       deleteKey: this.delete.bind(this),
@@ -25,17 +31,22 @@ class BaseBoard extends HTMLElement {
   // Lifecycle
 
   connectedCallback() {
+    // Add event listeners
     this.addEventListener("keydown", this.#handleKeydown);
     this.addEventListener("change", this.#handleChange);
   }
 
   disconnectedCallback() {
+    // Remove event listeners
     this.removeEventListener("keydown", this.#handleKeydown);
     this.removeEventListener("change", this.#handleChange);
   }
 
   // Private methods
 
+  /**
+   * @param {KeyboardEvent} event - The keyboard event
+   */
   #handleKeydown(event) {
     const key = cel.keyCombo(event);
     if (!this.#keys.has(key)) return;
