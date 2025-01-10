@@ -53,7 +53,7 @@ class BaseBoard extends HTMLElement {
 
     for (const [action, keys] of Object.entries(this.#keyMap)) {
       if (keys.includes(key)) {
-        this.keyHandlers[action]();
+        this.keyHandlers[action](event);
         return;
       }
     }
