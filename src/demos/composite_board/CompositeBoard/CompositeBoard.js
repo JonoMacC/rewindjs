@@ -68,18 +68,15 @@ class BaseBoard extends HTMLElement {
   spawnTile() {
     const tileWidth = 80;
     const tileHeight = 80;
-
-    const initialState = {
-      top: this.offsetHeight / 2 - tileHeight / 2,
-      left: this.offsetWidth / 2 - tileWidth / 2,
-      label: cel.alphaLabel(this.children.length + 1),
-    };
+    const top = Math.floor(this.offsetHeight / 2 - tileHeight / 2);
+    const left = Math.floor(this.offsetWidth / 2 - tileWidth / 2);
+    const label = cel.alphaLabel(this.children.length + 1);
 
     const tile = new RewindTile();
     tile.suspend();
-    tile.top = initialState.top;
-    tile.left = initialState.left;
-    tile.label = initialState.label;
+    tile.top = top;
+    tile.left = left;
+    tile.label = label;
     tile.resume();
     tile.record();
 
