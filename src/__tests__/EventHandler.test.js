@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { JSDOM } from "jsdom";
-import { EventHandler } from "../EventHandler";
+import { EventHandler } from "../core/EventHandler";
 
 describe("EventHandler", () => {
   let window;

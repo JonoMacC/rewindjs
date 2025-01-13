@@ -1,4 +1,4 @@
-import rewind from "../../../Rewind/rewind.js";
+import rewind from "../../../core/rewind.js";
 import TextNode from "../TextNode/TextNode.js";
 
 // Utilities

@@ -1,4 +1,4 @@
-import rewind from "../../../Rewind/rewind.js";
+import rewind from "../../../core/rewind.js";
 import Tile from "../../common/Tile/Tile.js";
 
 // Create the rewindable tile class (Tile + Undo/Redo)

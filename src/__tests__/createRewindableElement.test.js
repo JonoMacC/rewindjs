@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Window } from "happy-dom";
-import { createRewindableElement } from "../createRewindableElement.js";
+import { createRewindableElement } from "../core/createRewindableElement.js";
 import {generateKey} from "../__utils__/generateKey";
 
 // Set up a DOM environment

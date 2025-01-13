@@ -1,9 +1,9 @@
 // File for testing the IDE type hinting inferred from the code type annotations
 
-import {createRewindableElement} from "../createRewindableElement";
-import {createRewindable} from "../createRewindable";
-import rewind from "../rewind";
-import RewindTile from "../../demos/tiles/RewindTile/RewindTile";
+import {createRewindableElement} from "../core/createRewindableElement";
+import {createRewindable} from "../core/createRewindable";
+import rewind from "../core/rewind";
+import RewindTile from "../demos/tiles/RewindTile/RewindTile";
 
 class Base {
   #label;

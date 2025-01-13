@@ -1,4 +1,4 @@
-import rewind from "../../../Rewind/rewind.js";
+import rewind from "../../../core/rewind.js";
 import RewindTile from "../../tiles/RewindTile/RewindTile.js";
 
 // Utilities

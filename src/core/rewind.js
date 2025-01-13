@@ -5,7 +5,7 @@ import {createRewindableElement} from "./createRewindableElement.js";
 import cel from "../lib/celerity/cel.js";
 
 // Type definitions
-import './__types__/types.js';
+import '../__types__/types.js';
 
 /**
  * @template T

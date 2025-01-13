@@ -1,7 +1,7 @@
-import {UndoModel} from "../HistoryManager";
+import {UndoModel} from "../src/core/HistoryManager";
 
 // Utilities
-import cel from "../../lib/celerity/cel.js";
+import cel from "../src/lib/celerity/cel.js";
 
 /**
  * Represents a single change in the history

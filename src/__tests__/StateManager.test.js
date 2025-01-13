@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { StateManager } from '../StateManager';
+import { StateManager } from '../core/StateManager';
 import { generateKey } from "../__utils__/generateKey.js";
 
 // Mocks

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { HistoryManager, UndoModel } from "../HistoryManager";
+import { HistoryManager, UndoModel } from "../core/HistoryManager";
 
 describe("HistoryManager", () => {
   let rewind;

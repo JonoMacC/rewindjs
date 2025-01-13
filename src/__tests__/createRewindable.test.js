@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createRewindable } from "../createRewindable.js";
+import { createRewindable } from "../core/createRewindable.js";
 import { generateKey } from "../__utils__/generateKey.js";
 
 class BaseClass {

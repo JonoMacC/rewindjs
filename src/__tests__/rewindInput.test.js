@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Window } from "happy-dom";
-import rewind from "../rewind.js";
+import rewind from "../core/rewind.js";
 
 // Set up a DOM environment
 const window = new Window();
