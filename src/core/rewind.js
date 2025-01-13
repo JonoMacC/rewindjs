@@ -26,7 +26,7 @@ import '../__types__/types.js';
  * @returns {RewindConstructor<T>} A constructor for a rewindable version of the base class
  *
  * @example
- * // Basic class
+ * // Basic
  * class Counter { ... }
  * const RewindableCounter = rewind(Counter, { observe: ['count'] });
  *
