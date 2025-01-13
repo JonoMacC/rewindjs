@@ -93,6 +93,7 @@ class BaseBoard extends HTMLElement {
   }
 }
 
+/** @type {RewindableElementConstructor<BaseBoard>} */
 const CompositeBoard = rewind(BaseBoard);
 
 customElements.define("gx-composite-board", CompositeBoard);

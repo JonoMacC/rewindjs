@@ -8,13 +8,46 @@ import cel from "../lib/celerity/cel.js";
 import './__types__/types.js';
 
 /**
+ * @template T extends HTMLElement
+ * @typedef {Object} RewindableProps
+ * @property {Object} rewindState - The current tracked state
+ * @property {Map<string, RewindableElementInstance<T>>} rewindChildren - A map of child rewindable instances by id {@link RewindableInstance>}
+ * @property {number} rewindIndex - The current index in the undo/redo history
+ * @property {Object[]} rewindHistory - The undo/redo history
+ */
+
+/**
+ * @template T extends HTMLElement
+ * @typedef {Object} RewindableMethods
+ * @property {function(): RewindableElementInstance<T>} record - Record the current state
+ * @property {function((instance: RewindableElementInstance<T>) => void): RewindableElementInstance<T>} coalesce - Records the provided callback as a single change
+ * @property {function(number): RewindableElementInstance<T>} travel - Travel to the given index
+ * @property {function(number): RewindableElementInstance<T>} drop - Drop the state at the given index
+ * @property {function(): RewindableElementInstance<T>} undo - Undo the last action
+ * @property {function(): RewindableElementInstance<T>} redo - Redo the last undone action
+ * @property {function(): RewindableElementInstance<T>} suspend - Suspend recording
+ * @property {function(): RewindableElementInstance<T>} resume - Resume recording
+ */
+
+/**
+ * @template T extends HTMLElement
+ * @typedef {T & RewindableProps<T> & RewindableMethods<T>} RewindableElementInstance
+ */
+
+/**
+ * @template T extends HTMLElement
+ * @typedef {new (...args: any[]) => RewindableElementInstance<T>} RewindableElementConstructor
+ */
+
+/**
  * Creates a class that adds rewind functionality to a class for a DOM element. Properties in `observe` are
  * automatically recorded when changed, and methods in `coalesce` result in a single recording each time they are
  * called. Use `debounce` to add debounce to auto-recorded properties.
  *
- * @param {typeof HTMLElement} TargetClass - The class to extend.
+ * @template T extends HTMLElement
+ * @param {function(new: T)} TargetClass - The class definition to extend.
  * @param {RewindElementOptions} rewindOptions - Options for the Rewindable class.
- * @returns {typeof RewindableElement} A new class that extends TargetClass with undo/redo functionality.
+ * @returns {RewindableElementConstructor<T>} A new class with undo/redo functionality.
  *
  * @example
  * class Counter extends HTMLElement {
@@ -53,6 +86,8 @@ import './__types__/types.js';
 export function createRewindableElement(TargetClass, rewindOptions = {}) {
   return class RewindableElement extends TargetClass {
     static targetClass = TargetClass;
+
+    /** @type {RewindElementOptions} */
     static rewindOptions = rewindOptions;
 
     #rewindable;

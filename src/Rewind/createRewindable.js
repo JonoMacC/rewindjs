@@ -8,14 +8,53 @@ import cel from "../lib/celerity/cel.js";
 import './__types__/types.js';
 
 /**
+ * @template T
+ * @typedef RewindCollection
+ * @type {Map<string, RewindableInstance<T>>}
+ */
+
+/**
+ * @template T
+ * @typedef {Object} RewindableProps
+ * @property {Object} rewindState - The current tracked state
+ * @property {RewindCollection<T>} rewindChildren - A map of child rewindable instances by id
+ * @property {number} rewindIndex - The current index in the undo/redo history
+ * @property {Object[]} rewindHistory - The undo/redo history
+ */
+
+/**
+ * @template T
+ * @typedef {Object} RewindableMethods
+ * @property {function(): RewindableInstance<T>} record - Record the current state
+ * @property {function((instance: RewindableInstance<T>) => void): RewindableInstance<T>} coalesce - Records the provided callback as a single change
+ * @property {function(number): RewindableInstance<T>} travel - Travel to the given index
+ * @property {function(number): RewindableInstance<T>} drop - Drop the state at the given index
+ * @property {function(): RewindableInstance<T>} undo - Undo the last action
+ * @property {function(): RewindableInstance<T>} redo - Redo the last undone action
+ * @property {function(): RewindableInstance<T>} suspend - Suspend recording
+ * @property {function(): RewindableInstance<T>} resume - Resume recording
+ */
+
+/**
+ * @template T
+ * @typedef {T & RewindableProps<T> & RewindableMethods<T>} RewindableInstance
+ */
+
+/**
+ * @template T
+ * @typedef {new (...args: any[]) => RewindableInstance<T>} RewindableConstructor
+ */
+
+/**
  * Creates a class that adds undo/redo functionality to a target class. Properties in the `observe` option
  * are automatically recorded when they are changed. For changing multiple properties at once that should be recorded
  * as a single change rather than multiple separate changes, use the `coalesce` option, passing in the method name
  * where the changes occur.
  *
- * @param {typeof Object} TargetClass - The target class
+ * @template T
+ * @param {function(new: T)} TargetClass - The target class
  * @param {RewindOptions} rewindOptions - Options for the Rewindable class
- * @returns {typeof Rewindable} A new Rewindable class with undo/redo functionality
+ * @returns {RewindableConstructor<T>} A new Rewindable class with undo/redo functionality
  *
  * @example
  * class Counter {
@@ -37,6 +76,8 @@ import './__types__/types.js';
 export function createRewindable(TargetClass, rewindOptions = {}) {
   return class Rewindable {
     static targetClass = TargetClass;
+
+    /** @type {RewindOptions} */
     static rewindOptions = rewindOptions;
 
     #target;

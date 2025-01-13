@@ -8,14 +8,22 @@ import cel from "../lib/celerity/cel.js";
 import './__types__/types.js';
 
 /**
- * Creates a rewindable class with undo/redo functionality.
+ * @template T
+ * @typedef {T extends HTMLElement
+ *   ? RewindableElementConstructor<T>
+ *   : T extends {prototype: HTMLElement}
+ *     ? RewindableElementConstructor<T>
+ *     : RewindableConstructor<T>
+ * } RewindConstructor
+ */
+
+/**
+ * Creates a rewindable class constructor with undo/redo functionality.
  *
- * @param {typeof Object | typeof HTMLElement | HTMLElement} Base - The base class or instance to extend:
- *   - JavaScript class (e.g., `MyClass`)
- *   - Web Component class (e.g., `MyComponent`)
- *   - HTML element instance (e.g., `document.createElement('input')`)
- * @param {RewindOptions & RewindElementOptions} options - Configuration options
- * @returns {typeof Rewindable | typeof RewindableElement} A new class with undo/redo functionality
+ * @template T
+ * @param {function(new: T) | T} Base - The base class or element to make rewindable
+ * @param {RewindOptions | RewindElementOptions} [options] - Configuration options for rewind functionality
+ * @returns {RewindConstructor<T>} A constructor for a rewindable version of the base class
  *
  * @example
  * // Basic class
