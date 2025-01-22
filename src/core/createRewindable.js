@@ -98,8 +98,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
       const targetClass = this.constructor.targetClass;
       this.#target = (typeof HTMLElement !== 'undefined'
-        && targetClass.prototype instanceof HTMLElement)
-        ? document.createElement(targetClass.tagName)
+        && targetClass?.prototype instanceof HTMLElement)
+        ? document.createElement(targetClass?.tagName)
         : new targetClass(...args.slice(1));
 
       this.#historyManager = new HistoryManager(options.model);
