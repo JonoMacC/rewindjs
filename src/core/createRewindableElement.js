@@ -120,6 +120,11 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       // Defer intercept to ensure the Rewindable is fully initialized
       this.#rewindable.intercept({...options, propertyHandlers: this.#propertyHandlers, host: this});
 
+      // Wrap child mutation methods
+      // When a rewindable child is added or removed using an `Element.prototype` or `Node.prototype` method,
+      // the state will be recorded so that the operation can be undone or redone.
+      this.#wrapChildMutators();
+
       // Setup any children that were provided as arguments
       this.#setupChildren(children);
     }
@@ -218,6 +223,291 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      */
     #isRewindable(element) {
       return !!element.constructor.rewindOptions;
+    }
+
+    #wrapChildMutators() {
+      const mutations = {
+        /**
+         * Wraps `Element.append` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/append
+         */
+        append: this.#createMutationWrapper(function(_, args) {
+          const elements = this.#prepareRewindableElements(args);
+          return elements.length ? {
+            addChildren: { elements, mode: "append" }
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Element.prepend` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
+         */
+        prepend: this.#createMutationWrapper(function(_, args) {
+          const elements = this.#prepareRewindableElements(args);
+          return elements.length ? {
+            addChildren: { elements, mode: "prepend" }
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Node.insertBefore` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Node/insertBefore
+         */
+        insertBefore: this.#createMutationWrapper(function(_, newNode, referenceNode) {
+          const elements = this.#prepareRewindableElements([newNode]);
+          return elements.length ? {
+            addChildren: { elements, mode: "prepend", refId: referenceNode.id }
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Element.insertAdjacentElement` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/insertAdjacentElement
+         */
+        insertAdjacentElement: this.#createMutationWrapper(function(_, position, element) {
+          // Handle invalid position
+          if (!['beforebegin', 'afterend', 'beforeend', 'afterbegin'].includes(position)) {
+            return { skip: true };
+          }
+
+          // Handle non-rewindable parent for beforebegin/afterend positions
+          if ((position === 'beforebegin' || position === 'afterend') &&
+            !this.#isRewindable(this.parentNode)) {
+            return { skip: true };
+          }
+
+          const elements = this.#prepareRewindableElements([element]);
+          if (!elements.length) return { skip: true };
+
+          const positionHandler = {
+            'beforebegin': {
+                addChildren: {
+                  elements,
+                  mode: "prepend",
+                  refId: this.id
+                },
+                context: this.parentNode
+            },
+            'afterend': {
+                addChildren: {
+                  elements,
+                  mode: "append",
+                  refId: this.id
+                },
+                context: this.parentNode
+            },
+            'beforeend': {
+                addChildren: {
+                  elements,
+                  mode: "append"
+                }
+            },
+            'afterbegin': {
+                addChildren: {
+                  elements,
+                  mode: "prepend"
+                }
+            }
+          };
+
+          return positionHandler[position];
+        }),
+
+        /**
+         * Wraps `Element.before` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/before
+         */
+        before: this.#createMutationWrapper(function(_, args) {
+          const parent = this.parentNode;
+          if (!this.#isRewindable(parent)) {
+            return { skip: true };
+          }
+          const elements = this.#prepareRewindableElements(args);
+          return elements.length ? {
+            addChildren: {
+              elements,
+              mode: "prepend",
+              refId: this.id
+            },
+            context: parent,
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Element.after` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/after
+         */
+        after: this.#createMutationWrapper(function(_, args) {
+          const parent = this.parentNode;
+          if (!this.#isRewindable(parent)) {
+            return { skip: true };
+          }
+          const elements = this.#prepareRewindableElements(args);
+          return elements.length ? {
+            addChildren: {
+              elements,
+              mode: "append",
+              refId: this.id
+            },
+            context: parent,
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Element.remove` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/remove
+         */
+        remove: this.#createMutationWrapper(function() {
+          const parent = this.parentNode;
+          if (!this.#isRewindable(parent)) {
+            return { skip: true };
+          }
+          return { removeIds: [this.id], context: parent };
+        }),
+
+        /**
+         * Wraps `Node.removeChild` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Node/removeChild
+         */
+        removeChild: this.#createMutationWrapper(function(_, [child]) {
+          if (!this.#isRewindable(child)) {
+            return { skip: true };
+          }
+          return { removeIds: [child.id] };
+        }),
+
+        /**
+         * Wraps `Element.replaceWith` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceWith
+         */
+        replaceWith: this.#createMutationWrapper(function(_, args) {
+          const parent = this.parentNode;
+          if (!this.#isRewindable(parent)) {
+            return { skip: true };
+          }
+          const elements = this.#prepareRewindableElements(args);
+          return elements.length ? {
+            removeIds: [this.id],
+            addChildren: { elements, mode: "append", refId: this.id },
+            context: parent,
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Node.replaceChild` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Node/replaceChild
+         */
+        replaceChild: this.#createMutationWrapper(function(_, newChild, oldChild) {
+          if (!this.#isRewindable(oldChild)) {
+            return { skip: true };
+          }
+          const elements = this.#prepareRewindableElements([newChild]);
+          return elements.length ? {
+            removeIds: [oldChild.id],
+            addChildren: { elements, mode: "append", refId: oldChild.id },
+          } : { skip: true };
+        }),
+
+        /**
+         * Wraps `Element.replaceChildren` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceChildren
+         */
+        replaceChildren: this.#createMutationWrapper(function(_, ...newChildren) {
+          // Get all existing rewindable children to remove
+          const childIds = Array.from(this.children)
+            .filter(child => this.#isRewindable(child))
+            .map(child => child.id);
+
+          // Prepare new rewindable children
+          const elements = this.#prepareRewindableElements(newChildren);
+
+          // Skip only if no rewindable children involved at all
+          if (!elements.length && !childIds.length) {
+            return { skip: true };
+          }
+
+          return {
+            removeIds: childIds.length ? childIds : undefined,
+            addChildren: elements.length ? {
+              elements,
+              mode: "append"
+            } : undefined
+          };
+        }),
+      };
+
+      // Add additional method aliases
+      mutations.appendChild = mutations.append;
+
+      // Wrap each method
+      for (const [methodName, wrapper] of Object.entries(mutations)) {
+        const original = HTMLElement.prototype[methodName] || Node.prototype[methodName];
+        if (!original) continue;
+        this[methodName] = function(...args) {
+          return wrapper.call(this, original.bind(this), ...args);
+        };
+      }
+    }
+
+    /**
+     * Creates a wrapper for mutation methods that handles rewindable children
+     * @param {Function} handler - Specific handler for the mutation method
+     * @returns {Function} Wrapped mutation method
+     */
+    #createMutationWrapper(handler) {
+      const context = this;
+      return function(original, ...args) {
+        const result = handler.call(context, original, args);
+
+        // Apply the original method
+        if (result.skip) {
+          return original.apply(context, args);
+        }
+
+        try {
+          // Apply the original method that adds or removes the child to/from the DOM
+          const originalResult = original.apply(context, args);
+
+          // If the context exists in the result, use it for rewindable methods, otherwise use the current context
+          // This is for methods where the rewind method should be called from a context other than the element, such
+          // as from its parent element (`before`, `after`, `remove`, and `replaceWith` are methods that are called
+          // from the 'child' from the perspective of rewind methods, so they set the context to parent)
+          const rewindContext = result.context || context;
+
+          if (result.addChildren) {
+            // Add children to state without adding them to DOM since they are already in the DOM
+            rewindContext.addRewindChildren(
+              result.addChildren.elements,
+              result.addChildren.mode,
+              result.addChildren.refId
+            );
+          }
+
+          if (result.removeIds) {
+            // Remove children from state without removing them from DOM since they are already removed from DOM
+            rewindContext.removeIds(result.removeIds);
+          }
+
+          return originalResult;
+        } catch (error) {
+          console.error(`Error during mutation operation:`, error);
+          throw error;
+        }
+      };
+    }
+
+    /**
+     * Prepares elements for addition to rewindable state
+     * @param {Element[]} elements - Elements to prepare
+     * @returns {Array<{id: string, child: Element}>} Prepared elements
+     */
+    #prepareRewindableElements(elements) {
+      return elements
+        .filter(el => this.#isRewindable(el))
+        .map(element => {
+          element.id = element.id || cel.randomId();
+          return { id: element.id, child: element };
+        });
     }
 
     // Public API methods that delegate to core Rewindable
@@ -364,14 +654,51 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @returns {RewindableElement} this instance for chaining
      */
     addRewindable(id, child) {
-      // Set the child identifier
-      child.id = id;
+      // Add the child to the state
+      this.addRewindChild(id, child);
 
+      // Insert the child into the DOM
+      this.addToDOM(id, child);
+      return this;
+    }
+
+    /**
+     * Adds a rewindable child from state
+     * @param {string} id - Unique identifier for the child
+     * @param {RewindableElementInstance} child - Child to add
+     * @returns {RewindableElementInstance} this instance for chaining
+     */
+    addRewindChild(id, child) {
       // Add the child to the state
       this.#rewindable.addRewindable(id, child);
+      return this;
+    }
 
+    /**
+     * Adds rewindable children
+     * @param {Array<{id: string, child: Rewindable}>} children - List of rewindable children
+     * @param {"prepend" | "append"} [insertionMode="append"] - The mode to add the children ('prepend' or 'append')
+     * @param {string} [refId=""] - Identifier of the reference child where insertion starts from
+     */
+    addRewindChildren(children, insertionMode="append", refId="") {
+      this.#rewindable.addRewindChildren(children, insertionMode, refId);
+      return this;
+    }
+
+    /**
+     * Inserts a rewindable child into the DOM
+     * @param {string} id - Unique identifier for the child
+     * @param {RewindableElementInstance} child - Child to insert
+     * @returns {RewindableElementInstance} this instance for chaining
+     */
+    addToDOM(id, child) {
       // Get the position from the state
       const {position} = this.rewindState.children.get(id);
+
+      if (position === undefined) return this;
+
+      // Set the child identifier
+      child.id = id;
 
       // Add the child to the element in the correct position
       this.insertBefore(child, this.children[position]);
@@ -384,27 +711,44 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @returns {RewindableElement} this instance for chaining
      */
     removeRewindable(id) {
-      // Get the child
-      const child = this.rewindChildren.get(id);
-
-      // Determine if child is focused
-      const focused = document.activeElement === child;
-
-      // Get previous child
-      const previousChild = child.previousElementSibling;
-
       // Remove the child from the state
+      this.removeId(id);
+
+      // Remove the child from the DOM
+      this.removeFromDOM(id);
+
+      return this;
+    }
+
+    /**
+     * Removes a rewindable child from state
+     * @param {string} id - Child identifier to remove
+     * @returns {RewindableElementInstance} this instance for chaining
+     */
+    removeId(id) {
       this.#rewindable.removeRewindable(id);
+    }
+
+    /**
+     * Removes rewindable children from state
+     * @param {string[]} ids - Child identifiers to remove
+     * @returns {RewindableElementInstance} this instance for chaining
+     */
+    removeIds(ids) {
+      this.#rewindable.removeRewindChildren(ids);
+    }
+
+    /**
+     * Removes a rewindable child from the DOM
+     * @param {string} id - Child identifier to remove
+     * @returns {RewindableElementInstance} this instance for chaining
+     */
+    removeFromDOM(id) {
+      // Get the child
+      const child = this.rewindChildren.get(id) || this.querySelector(`#${id}`);
 
       // Remove the child from the DOM
       child.remove();
-
-      // Manage focus if child was focused
-      if (focused) {
-        // Focus previous child if any, else focus this
-        const nextElement = previousChild || this;
-        nextElement.focus();
-      }
 
       return this;
     }
