@@ -574,7 +574,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
     /**
      * Records the current state in history
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     record() {
       this.#rewindable.record();
@@ -585,7 +585,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * Coalesces changes by suspending recording, running the callback,
      * and recording once after the callback is completed
      * @param {Function} fn - Callback to run
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     coalesce(fn) {
       this.#rewindable.coalesce(fn);
@@ -595,7 +595,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     /**
      * Travels to the given index
      * @param {number} index - Index to travel to
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     travel(index) {
       this.#rewindable.travel(index);
@@ -605,7 +605,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     /**
      * Drops the state at the given index
      * @param {number} index - Index to drop
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     drop(index) {
       this.#rewindable.drop(index);
@@ -614,7 +614,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
     /**
      * Undoes the last recorded state
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     undo() {
       this.#rewindable.undo();
@@ -624,7 +624,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
     /**
      * Redoes the last undone state
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     redo() {
       this.#rewindable.redo();
@@ -634,7 +634,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
     /**
      * Suspends recording
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     suspend() {
       this.#rewindable.suspend();
@@ -643,7 +643,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
     /**
      * Resumes recording
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     resume() {
       this.#rewindable.resume();
@@ -655,8 +655,8 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     /**
      * Adds a rewindable child
      * @param {string} id - Unique identifier for the child
-     * @param {RewindableElement} child - Child to add
-     * @returns {RewindableElement} this instance for chaining
+     * @param {RewindableElementInstance} child - Child to add
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     addRewindable(id, child) {
       // Add the child to the state
@@ -713,7 +713,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     /**
      * Removes a rewindable child
      * @param {string} id - Child identifier to remove
-     * @returns {RewindableElement} this instance for chaining
+     * @returns {RewindableElementInstance} this instance for chaining
      */
     removeRewindable(id) {
       // Remove the child from the state
