@@ -4,6 +4,7 @@ import cel from "../../../lib/celerity/cel.js";
 // Define the base tile class
 class Tile extends HTMLElement {
   #keyMap = {
+    submitKey: ["Enter"],
     leftKey: ["ArrowLeft"],
     upKey: ["ArrowUp"],
     rightKey: ["ArrowRight"],
@@ -39,25 +40,28 @@ class Tile extends HTMLElement {
 
     // Initialize key handlers
     this.#keyHandlers = {
+      submitKey: () => {
+        this.#handleChange();
+      },
       upKey: () => {
         this.top -= this.#step;
-        this.#handleChange();
+        // this.#handleChange();
       },
       downKey: () => {
         this.top += this.#step;
-        this.#handleChange();
+        // this.#handleChange();
       },
       leftKey: () => {
         this.left -= this.#step;
-        this.#handleChange();
+        // this.#handleChange();
       },
       rightKey: () => {
         this.left += this.#step;
-        this.#handleChange();
+        // this.#handleChange();
       },
       alphaNumKey: (key) => {
         this.label = key;
-        this.#handleChange();
+        // this.#handleChange();
       },
     };
   }
