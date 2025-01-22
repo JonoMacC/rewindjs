@@ -7,7 +7,6 @@ export class StateManager {
   #observe;
   #children;
   #childTypes = new Map();
-  #childHandler;
   #childPositions = new Map();
   #restoreHandler;
 
@@ -103,6 +102,12 @@ export class StateManager {
 
     // Register child types
     this.#children.forEach(child => this.registerChildType(child.constructor));
+  }
+
+  get childPositions() {
+    return this.#childPositions.size
+      ? this.#childPositions
+      : new Map(this.#children.keys().map((id, index) => [id, index]));
   }
 
   // Private methods
@@ -211,9 +216,67 @@ export class StateManager {
   }
 
   /**
+   * @param {Array<{id: string, child: Rewindable}>} children - List of rewindable children
+   * @param {"prepend" | "append"} [insertionMode="append"] - The mode to add the children ('prepend' or 'append')
+   * @param {string} [refId=""] - Identifier of the reference child where insertion starts from
+   */
+  addChildren(children, insertionMode = "append", refId = "") {
+    if (refId && !this.childPositions.has(refId)) {
+      throw new Error(`Reference child with id "${refId}" not found.`);
+    }
+
+    const handlers = {
+      prepend: () => {
+        const refPosition = refId ? this.childPositions.get(refId) : 0;
+
+        // Shift positions for existing children
+        for (const [id, position] of this.childPositions.entries()) {
+          if (position >= refPosition) {
+            this.#childPositions.set(id, position + children.length);
+          }
+        }
+
+        // Add new children at the beginning
+        children.forEach(({ id, child }, index) => {
+          this.registerChildType(child.constructor);
+          this.#children.set(id, child);
+          this.#childPositions.set(id, refPosition + index);
+        });
+      },
+      append: () => {
+        const refPosition = refId ? this.childPositions.get(refId) : this.childPositions.size;
+
+        if (refId) {
+          // Shift positions for children after the insertion point
+          for (const [id, position] of this.childPositions.entries()) {
+            if (position >= refPosition) {
+              this.#childPositions.set(id, position + children.length);
+            }
+          }
+        }
+
+        children.forEach(({ id, child }, index) => {
+          this.registerChildType(child.constructor);
+          this.#children.set(id, child);
+          this.#childPositions.set(id, refPosition + index);
+        });
+      }
+    }
+
+    handlers[insertionMode]();
+  }
+
+  /**
    * @param {string} id - Child identifier to remove
    */
   removeChild(id) {
     this.#children.delete(id);
+  }
+
+  /**
+   * @param {...string} children - Child identifiers to remove
+   */
+  removeChildren(...children) {
+    children.forEach(id => this.#children.delete(id));
   }
 }

@@ -369,7 +369,21 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @returns {Rewindable} this instance for chaining
      */
     addRewindable(id, child) {
+      if (this.#stateManager.children.has(id)) return this;
+
       this.#stateManager.addChild(id, child);
+      this.record();
+      return this;
+    }
+
+    /**
+     * Adds rewindable children
+     * @param {Array<{id: string, child: Rewindable}>} children - List of rewindable children
+     * @param {"prepend" | "append"} [insertionMode="append"] - The mode to add the children ('prepend' or 'append')
+     * @param {string} [refId=""] - Identifier of the reference child where insertion starts from
+     */
+    addRewindChildren(children, insertionMode="append", refId="") {
+      this.#stateManager.addChildren(children, insertionMode, refId);
       this.record();
       return this;
     }
@@ -380,6 +394,8 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      * @returns {Rewindable} this instance for chaining
      */
     removeRewindable(id) {
+      if (!this.#stateManager.children.has(id)) return this;
+
       // Record the current state
       // This will capture the state of the child before it is removed
       // If the child state was already recorded, this will be a no-op
@@ -389,6 +405,23 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
       this.#stateManager.removeChild(id);
 
       // Record the new state now that the child has been removed
+      this.record();
+      return this;
+    }
+
+    /**
+     * Removes rewindable children
+     * @param {string[]} ids - Child identifiers to remove
+     * @returns {Rewindable} this instance for chaining
+     */
+    removeRewindChildren(ids) {
+      // Record the current state
+      this.record();
+
+      // Remove the children
+      ids.forEach(id => this.#stateManager.removeChild(id));
+
+      // Record the new state now that the children have been removed
       this.record();
       return this;
     }
