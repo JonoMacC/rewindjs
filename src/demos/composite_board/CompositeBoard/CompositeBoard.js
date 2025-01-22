@@ -91,9 +91,16 @@ class BaseBoard extends HTMLElement {
     // Get focused tile
     const tile = this.querySelector('gx-rw-tile:focus');
     if (!tile) return;
+
+    // Get focus target
+    const focusTarget = tile.previousElementSibling ??
+                    (this.lastElementChild !== tile ? this.lastElementChild : this);
+
     // Remove tile from DOM
     // Rewind state should handle recording automatically
     tile.remove();
+
+    focusTarget.focus();
   }
 
   onChange() {
