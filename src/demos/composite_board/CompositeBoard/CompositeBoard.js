@@ -23,7 +23,7 @@ class BaseBoard extends HTMLElement {
 
     // Initialize key handlers
     this.keyHandlers = {
-      insertKey: this.spawnTile.bind(this),
+      insertKey: this.insert.bind(this),
       deleteKey: this.delete.bind(this),
     };
   }
@@ -65,7 +65,7 @@ class BaseBoard extends HTMLElement {
 
   // Public methods
 
-  spawnTile() {
+  insert() {
     const tileWidth = 80;
     const tileHeight = 80;
     const top = Math.floor(this.offsetHeight / 2 - tileHeight / 2);
