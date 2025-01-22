@@ -16,14 +16,12 @@
  * @property {UndoModel} [model='linear'] - Undo model
  * @property {string[]} [observe=[]] - Properties to observe with auto-recording
  * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
- * @property {Object[]} [history=[]] - Initial history
- * @property {number} [index=undefined] - Initial index
  * @property {Object<string, number>} [debounce={}] - Debounce times for properties
  * @property {UndoKeys} [keys] - Keyboard shortcuts configuration
  */
 
 /**
- * @typedef {Object} ChildHandler
+ * @typedef {Object} RestoreHandler
  * @property {Function} add - Function to add a child
  * @property {Function} remove - Function to remove a child
  */
@@ -35,7 +33,7 @@
  * @property {string[]} [coalesce=[]] - Methods to coalesce with auto-recording
  * @property {Map<string, Function>} [propertyHandlers=Map()] - Functions to execute on a property change
  * @property {Object} [host] - Target to intercept for auto-recording
- * @property {ChildHandler} [childHandler={}] - Custom child add and remove functions
+ * @property {RestoreHandler} [restoreHandler={}] - Custom child add and remove functions
  */
 
 /**

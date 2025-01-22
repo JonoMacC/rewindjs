@@ -9,6 +9,7 @@ export class StateManager {
   #childTypes = new Map();
   #childHandler;
   #childPositions = new Map();
+  #restoreHandler;
 
   /**
    * A utility class for managing the state of a target object with separate rewindable children.
@@ -17,20 +18,20 @@ export class StateManager {
    * @param {Object} options - Options
    * @param {string[]} options.observe - Properties to observe on the target
    * @param {RewindCollection} options.children - Collection of rewindable children
-   * @param {ChildHandler} options.childHandler - Handler for updating rewindable children
+   * @param {RestoreHandler} options.restoreHandler - Handler for updating restored rewindable children
    */
   constructor(target, {
     observe = [],
     children = new Map(),
-    childHandler = {
+    restoreHandler = {
       add: (id, child) => this.addChild(id, child),
-      remove: (id) => this.removeChild(id)
+      remove: (id) => this.removeChild(id),
     }
   } = {}) {
     this.#target = target;
     this.#observe = new Set(observe);
     this.#children = children;
-    this.#childHandler = childHandler;
+    this.#restoreHandler = restoreHandler;
 
     // Register child types
     this.#children.forEach(child => this.registerChildType(child.constructor));
@@ -134,8 +135,9 @@ export class StateManager {
     const child = this.#createChild(childSnapshot);
     child.travel(index);
 
-    // Add the child
-    this.#childHandler.add(id, child)
+    // Invoke the callback for restoring a child
+    // For a web component, the callback should add the child to the DOM
+    this.#restoreHandler.add(id, child);
 
     return child;
   }
@@ -147,8 +149,9 @@ export class StateManager {
     // Remove children that are not in newState
     for (const id of this.#children.keys()) {
       if (!newState.has(id)) {
-        // Remove the child
-        this.#childHandler.remove(id);
+        // Invoke the callback for restoring a child
+        // For a web component, the callback should remove the child from the DOM
+        this.#restoreHandler.remove(id);
       }
     }
 

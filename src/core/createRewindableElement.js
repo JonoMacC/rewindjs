@@ -109,7 +109,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         ...options,
         propertyHandlers: this.#propertyHandlers,
         host: this,
-        childHandler: {
+        restoreHandler: {
           add: (id, child) => this.addRewindable(id, child),
           remove: (id) => this.removeRewindable(id)
         }
