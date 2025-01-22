@@ -59,10 +59,6 @@ class BaseBoard extends HTMLElement {
     }
   }
 
-  #handleChange() {
-    this.record();
-  }
-
   // Public methods
 
   insert() {
@@ -80,7 +76,9 @@ class BaseBoard extends HTMLElement {
     tile.resume();
     tile.record();
 
-    this.addRewindable(cel.randomId(), tile);
+    // Add tile to DOM
+    // Rewind state should handle recording automatically
+    this.append(tile);
 
     tile.focus();
   }
@@ -89,7 +87,9 @@ class BaseBoard extends HTMLElement {
     // Get focused tile
     const tile = this.querySelector('gx-rw-tile:focus');
     if (!tile) return;
-    this.removeRewindable(tile.id);
+    // Remove tile from DOM
+    // Rewind state should handle recording automatically
+    tile.remove();
   }
 }
 
