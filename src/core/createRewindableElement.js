@@ -104,9 +104,14 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
       this.#setupPropertyHandlers(options.observe, options.debounce);
 
+      // Isolate the rewind options that are relevant to rewindable (no keys or debounce)
+      const rewindOptions = {...options};
+      delete rewindOptions.keys;
+      delete rewindOptions.debounce;
+
       // Create the core rewindable instance
       const RewindableClass = createRewindable(TargetClass, {
-        ...options,
+        ...rewindOptions,
         propertyHandlers: this.#propertyHandlers,
         host: this,
         restoreHandler: {
