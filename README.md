@@ -1,4 +1,8 @@
-# Rewind JS
+<picture>
+  <source srcset="./static/logo_dark.svg" media="(prefers-color-scheme: dark)">
+  <source srcset="./static/logo_light.svg" media="(prefers-color-scheme: light)">
+  <img src="./static/logo_light.svg" alt="Rewind JS">
+</picture>
 
 Rewind is a library for adding undo/redo functionality to JavaScript classes and Web Components.
 
