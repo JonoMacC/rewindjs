@@ -244,6 +244,17 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         }),
 
         /**
+         * Wraps `Node.appendChild` method
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild
+         */
+        appendChild: this.#createMutationWrapper(function(_, child) {
+          const elements = this.#prepareRewindableElements([child]);
+          return elements.length ? {
+            addChildren: { elements, mode: "append" }
+          } : { skip: true };
+        }),
+
+        /**
          * Wraps `Element.prepend` method
          * @link https://developer.mozilla.org/en-US/docs/Web/API/Element/prepend
          */
@@ -440,9 +451,6 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
           };
         }),
       };
-
-      // Add additional method aliases
-      mutations.appendChild = mutations.append;
 
       // Wrap each method
       for (const [methodName, wrapper] of Object.entries(mutations)) {
