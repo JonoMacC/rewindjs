@@ -689,7 +689,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     }
 
     /**
-     * Adds a rewindable child from state
+     * Adds a rewindable child to state
      * @param {string} id - Unique identifier for the child
      * @param {RewindableElementInstance} child - Child to add
      * @returns {RewindableElementInstance} this instance for chaining
