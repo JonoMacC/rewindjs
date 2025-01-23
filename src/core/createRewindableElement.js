@@ -192,6 +192,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
      * @param {Map<string, RewindableElement>} children - Collection of rewindable children
      */
     #setupChildren(children) {
+      // Suspend recording while children are added as part of the initial setup
+      this.suspend();
+
       for (const [id, child] of children.entries()) {
         // Get the position from the state
         const {position} = this.rewindState.children.get(id);
@@ -202,6 +205,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
         // Add the child to the element in the correct position
         this.insertBefore(child, this.children[position]);
       }
+      this.resume();
     }
 
     /**
@@ -714,7 +718,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       child.id = id;
 
       // Add the child to the element in the correct position
+      this.suspend();
       this.insertBefore(child, this.children[position]);
+      this.resume();
       return this;
     }
 
@@ -761,7 +767,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       const child = this.rewindChildren.get(id) || this.querySelector(`#${id}`);
 
       // Remove the child from the DOM
+      this.suspend();
       child.remove();
+      this.resume();
 
       return this;
     }
