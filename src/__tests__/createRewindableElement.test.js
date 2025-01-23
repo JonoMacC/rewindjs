@@ -459,11 +459,11 @@ describe("createRewindableElement", () => {
 
     it("should handle removing children", () => {
       const child = new RewindableElement();
-      component.addRewindable("1", child);
-      component.removeRewindable("1");
+      component.addRewindable("_1", child);
+      component.removeRewindable("_1");
 
       // Verify that the child was removed from the state
-      expect(component.rewindChildren.get("1")).toBeUndefined();
+      expect(component.rewindChildren.get("_1")).toBeUndefined();
 
       // Verify that the child was removed from the composite
       expect(component.contains(child)).toBe(false);
@@ -540,10 +540,11 @@ describe("createRewindableElement", () => {
       });
 
       // Add the child
-      component.addRewindable("1", child);
+      child.id = "_1";
+      component.append(child);
 
       // Remove the child
-      component.removeRewindable("1");
+      child.remove();
 
       // Verify that no children are present
       expect(component.rewindChildren.size).toBe(0);
@@ -577,10 +578,11 @@ describe("createRewindableElement", () => {
       });
 
       // Add the child
-      component.addRewindable("1", child);
+      child.id = "_1";
+      component.append(child);
 
       // Remove the child
-      component.removeRewindable("1");
+      child.remove();
 
       // Verify that no children are present
       expect(component.rewindChildren.size).toBe(0);
@@ -599,7 +601,7 @@ describe("createRewindableElement", () => {
       expect(component.rewindState.children.size).toBe(1);
 
       const originalChild = child;
-      const restoredChild = component.rewindChildren.get("1");
+      const restoredChild = component.rewindChildren.get("_1");
 
       // Verify that the restored child and the original child have the same class
       expect(originalChild.constructor).toBe(restoredChild.constructor);
@@ -659,7 +661,8 @@ describe("createRewindableElement", () => {
       });
 
       // Add the child
-      component.addRewindable("1", child);
+      child.id = "_1";
+      component.append(child);
 
       // Create a promise that resolves when children are initialized
       await new Promise(resolve => {
@@ -682,11 +685,11 @@ describe("createRewindableElement", () => {
       child.value = 7;
 
       // Remove the child
-      component.removeRewindable("1");
+      child.remove();
 
       // Verify that the child's last state was recorded to the composite history
       const historyBeforeRemoval = component.rewindHistory[2];
-      const lastChildHistory = historyBeforeRemoval.children.get("1").history;
+      const lastChildHistory = historyBeforeRemoval.children.get("_1").history;
       expect(lastChildHistory.length).toBe(2);
       expect(lastChildHistory[0].value).toBe(0);
       expect(lastChildHistory[1].value).toBe(7);
@@ -695,7 +698,7 @@ describe("createRewindableElement", () => {
       component.undo();
 
       // Verify the child's history and current state
-      const addedChild = component.rewindChildren.get("1");
+      const addedChild = component.rewindChildren.get("_1");
       expect(addedChild.value).toBe(7);
       expect(addedChild.rewindHistory.length).toBe(2);
       expect(addedChild.rewindHistory[0].value).toBe(0);
@@ -724,7 +727,8 @@ describe("createRewindableElement", () => {
       });
 
       // Add a child
-      component.addRewindable("1", child);
+      child.id = "_1";
+      component.append(child);
 
       // Create a promise that resolves when children are initialized
       await new Promise(resolve => {
@@ -744,11 +748,12 @@ describe("createRewindableElement", () => {
       });
 
       // Verify the child's position is 0
-      expect(component.rewindState.children.get("1").position).toBe(0);
+      expect(component.rewindState.children.get("_1").position).toBe(0);
 
       // Add a second child
       const child2 = new RewindableElement();
-      component.addRewindable("2", child2);
+      child2.id = "_2";
+      component.append(child2);
 
       // Create a promise that resolves when children are initialized
       await new Promise(resolve => {
@@ -768,16 +773,16 @@ describe("createRewindableElement", () => {
       });
 
       // Verify the second child's position is 1
-      expect(component.rewindState.children.get("2").position).toBe(1);
+      expect(component.rewindState.children.get("_2").position).toBe(1);
 
       // Remove the first child
-      component.removeRewindable("1");
+      child.remove();
 
       // Undo the removal
       component.undo();
 
       // Verify that the child's position is 0
-      expect(component.rewindState.children.get("1").position).toBe(0);
+      expect(component.rewindState.children.get("_1").position).toBe(0);
 
       // Verify that the child was inserted in the correct position in the composite
       const firstChild = component.children[0];
@@ -797,13 +802,13 @@ describe("createRewindableElement", () => {
       expect(component.rewindChildren.size).toBe(2);
 
       // Remove the second child
-      component.removeRewindable("2");
+      child2.remove();
 
       // Undo the removal
       component.undo();
 
       // Verify that the second child's position is 1
-      expect(component.rewindState.children.get("2").position).toBe(1);
+      expect(component.rewindState.children.get("_2").position).toBe(1);
 
       // Verify that the second child was inserted in the correct position in the composite
       const secondChild = component.children[1];
@@ -832,10 +837,11 @@ describe("createRewindableElement", () => {
       });
 
       // Add the child
-      component.addRewindable("1", child);
+      child.id = "_1";
+      component.append(child);
 
       // Remove the child
-      component.removeRewindable("1");
+      child.remove();
 
       // Undo the removal
       component.undo();
