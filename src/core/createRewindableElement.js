@@ -491,6 +491,12 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
           // from the 'child' from the perspective of rewind methods, so they set the context to parent)
           const rewindContext = result.context || context;
 
+          if (!result.addChildren && !result.removeIds) return originalResult;
+
+          if (result.removeIds) rewindContext.record();
+
+          rewindContext.suspend();
+
           if (result.addChildren) {
             // Add children to state without adding them to DOM since they are already in the DOM
             rewindContext.addRewindChildren(
@@ -504,6 +510,9 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
             // Remove children from state without removing them from DOM since they are already removed from DOM
             rewindContext.removeIds(result.removeIds);
           }
+
+          rewindContext.resume();
+          rewindContext.record();
 
           return originalResult;
         } catch (error) {
