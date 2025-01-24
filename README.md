@@ -4,6 +4,8 @@
   <img src="./static/logo_light.svg" alt="Rewind JS">
 </picture>
 
+[![0 dependencies!](https://0dependencies.dev/0dependencies.svg)](https://0dependencies.dev)
+
 Rewind is a library for adding undo/redo functionality to JavaScript classes and Web Components.
 
 **Try it** at [Rewind JS](https://rewindjs.netlify.app)
