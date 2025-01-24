@@ -1,0 +1,99 @@
+gx-text-node {
+  font-size: 1rem;
+  min-width: 30px;
+  width: max-content;
+  padding: 4px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: grab;
+  outline-offset: 0;
+  border: 1px dashed var(--border-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  user-select: none;
+  --webkit-user-select: none;
+  transition: outline 100ms ease, box-shadow 100ms ease;
+
+  &:hover {
+    outline: var(--active) solid 1px;
+    outline-offset: -1px;
+  }
+
+  &:focus,
+  &:focus-visible,
+  &.drag {
+    z-index: 1;
+    outline: var(--active) solid 1px;
+    outline-offset: -1px;
+    box-shadow: none;
+
+    & .handle {
+      visibility: visible;
+    }
+  }
+
+  &.drag {
+    cursor: grabbing;
+
+    & [contenteditable] {
+      cursor: grabbing;
+    }
+  }
+
+  & .handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--active);
+    background-color: var(--surface-000);
+    z-index: 1;
+    visibility: hidden;
+
+    &.tl {
+      top: -4px;
+      left: -4px;
+    }
+
+    &.tr {
+      top: -4px;
+      right: -4px;
+    }
+
+    &.bl {
+      bottom: -4px;
+      left: -4px;
+    }
+
+    &.br {
+      bottom: -4px;
+      right: -4px;
+    }
+  }
+
+  & [contenteditable] {
+    cursor: text;
+    flex-grow: 1;
+
+    &:focus {
+      outline: none;
+      box-shadow: none;
+    }
+  }
+
+  &:has([contenteditable]:focus) {
+    outline: var(--active) solid 2px;
+    outline-offset: -1px;
+    box-shadow: 0 0 0 6px color-mix(in hsl, var(--active), transparent 80%);
+
+    & .handle {
+      visibility: hidden;
+    }
+  }
+}
+
+:has(.drag) {
+  cursor: grabbing;
+}

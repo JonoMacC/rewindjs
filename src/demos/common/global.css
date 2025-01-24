@@ -1,0 +1,22 @@
+*:focus-visible {
+    outline: var(--active) solid 2px;
+    outline-offset: 0;
+    box-shadow: 0 0 0 6px color-mix(in hsl, var(--active), transparent 80%);
+}
+
+::selection {
+    background-color: var(--active);
+    color: var(--white);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--active) var(--surface-000);
+}
+
+body {
+    padding: 0;
+    font-family: "JetBrains Mono", monospace;
+    background-color: var(--surface-000);
+    color: var(--text);
+}

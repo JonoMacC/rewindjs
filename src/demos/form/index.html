@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta
+    charset="UTF-8"
+  >
+    <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+    <title>Rewind Form Controls</title>
+    <link
+    rel="stylesheet"
+    href="../common/styles.css"
+  >
+    <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+    <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+    <link
+    href="https://fonts.googleapis.com/css2?family=Metamorphous&display=swap"
+    rel="stylesheet"
+  >
+    <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+    rel="stylesheet"
+  >
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="intro">Demo 2</span>
+        <h1>Form</h1>
+        <p>The HTML form controls are rewindable. Each change can be undone or redone independent of other inputs.</p>
+      </header>
+      <gx-shell id="form-container">
+        <form>
+          <fieldset class="two-col">
+            <label for="name">Name</label>
+            <rw-text-box value="Rect1" id="name"></rw-text-box>
+            <label
+              for="description"
+              style="align-self: start"
+            >Description</label>
+            <rw-textarea id="description" rows="5"></rw-textarea>
+            <label for="expire-date">Date</label>
+            <rw-date-box id="expire-date"></rw-date-box>
+            <label for="expire-time">Time</label>
+            <rw-time-box id="expire-time"></rw-time-box>
+            <label for="link">Link</label>
+            <rw-url-box id="link"></rw-url-box>
+          </fieldset>
+          <fieldset class="grid-4">
+            <label for="X" title="X position">X</label>
+            <rw-number-box id="X"></rw-number-box>
+            <label for="Y" title="Y Position">Y</label>
+            <rw-number-box id="Y"></rw-number-box>
+            <label for="W" title="Width">W</label>
+            <rw-number-box id="W"></rw-number-box>
+            <label for="H" title="height">H</label>
+            <rw-number-box id="H"></rw-number-box>
+            <label for="R" title="Rotation">R</label>
+            <rw-number-box
+              id="R"
+              max="180"
+              min="-180"
+              value="0"
+            ></rw-number-box>
+            <label for="S" title="Shear">S</label>
+            <rw-number-box id="S" value="0" min="-85" max="85"></rw-number-box>
+          </fieldset>
+          <fieldset id="appearance" class="two-col">
+            <label for="fill">Fill</label>
+            <rw-color-box id="fill"></rw-color-box>
+            <label for="blend-mode">Blend Mode</label>
+            <rw-select id="blend-mode">
+              <option value="normal">Normal</option>
+              <option value="darken">Darken</option>
+              <option value="multiply">Multiply</option>
+              <option value="color_burn">Color Burn</option>
+              <option value="lighten">Lighten</option>
+              <option value="screen">Screen</option>
+              <option value="color_dodge">Color Dodge</option>
+              <option value="overlay">Overlay</option>
+              <option value="soft_light">Soft Light</option>
+              <option value="hard_light">Hard Light</option>
+              <option value="difference">Difference</option>
+              <option value="exclusion">Exclusion</option>
+              <option value="hue">Hue</option>
+              <option value="saturation">Saturation</option>
+              <option value="color">Color</option>
+              <option value="luminosity">Luminosity</option>
+            </rw-select>
+            <label for="opacity">Opacity</label>
+            <rw-range id="opacity"></rw-range>
+          </fieldset>
+          <fieldset>
+            <rw-checkbox id="border"></rw-checkbox>
+            <label for="border">Border</label>
+          </fieldset>
+          <fieldset>
+            <rw-checkbox id="box-shadow"></rw-checkbox>
+            <label for="box-shadow">Box Shadow</label>
+          </fieldset>
+          <fieldset>
+            <rw-checkbox id="outline"></rw-checkbox>
+            <label for="outline">Outline</label>
+          </fieldset>
+          <fieldset>
+            <legend>Horizontal Policy</legend>
+            <rw-radio-group>
+              <div>
+                <input
+                type="radio"
+                name="h-policy"
+                id="h-fill"
+                value="fill"
+              >
+                <label for="h-fill">Fill</label>
+              </div>
+              <div>
+                <input
+                type="radio"
+                name="h-policy"
+                id="h-fit"
+                value="fit"
+              >
+                <label for="h-fit">Fit</label>
+              </div>
+              <div>
+                <input
+                type="radio"
+                name="h-policy"
+                id="h-fixed"
+                value="fixed"
+                checked
+              >
+                <label for="h-fixed">Fixed</label>
+              </div>
+            </rw-radio-group>
+          </fieldset>
+          <fieldset>
+            <legend>Vertical Policy</legend>
+            <rw-radio-group>
+              <div>
+                <input
+                type="radio"
+                name="v-policy"
+                id="v-fill"
+                value="fill"
+              >
+                <label for="v-fill">Fill</label>
+              </div>
+              <div>
+                <input
+                type="radio"
+                name="v-policy"
+                id="v-fit"
+                value="fit"
+              >
+                <label for="v-fit">Fit</label>
+              </div>
+              <div>
+                <input
+                type="radio"
+                name="v-policy"
+                id="v-fixed"
+                value="fixed"
+                checked
+              >
+                <label for="v-fixed">Fixed</label>
+              </div>
+            </rw-radio-group>
+          </fieldset>
+          <fieldset class="two-col">
+            <label for="password">Password</label>
+            <rw-password-box id="password"></rw-password-box>
+            <label for="datetime">Date Time</label>
+            <rw-datetime-local-box id="password"></rw-datetime-local-box>
+            <label for="month">Month</label>
+            <rw-month-box id="month"></rw-month-box>
+            <label for="week">Week</label>
+            <rw-week-box id="week"></rw-week-box>
+            <label for="tel">Phone</label>
+            <rw-tel-box id="tel"></rw-tel-box>
+          </fieldset>
+        </form>
+      </gx-shell>
+    </main>
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
