@@ -384,8 +384,6 @@ const cel = {
       return a.getTime() === b.getTime();
     if (!a || !b || (typeof a !== "object" && typeof b !== "object"))
       return a === b;
-    if (a === null || a === undefined || b === null || b === undefined)
-      return false;
     if (a.prototype !== b.prototype) return false;
     if (a instanceof Set && b instanceof Set) {
       return a.size === b.size && [...a].every((value) => b.has(value));
