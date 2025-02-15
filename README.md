@@ -1,7 +1,7 @@
 <picture>
-  <source srcset="./static/logo_dark.svg" media="(prefers-color-scheme: dark)">
-  <source srcset="./static/logo_light.svg" media="(prefers-color-scheme: light)">
-  <img src="./static/logo_light.svg" alt="Rewind JS">
+  <source srcset="./static/logo_color_dark.svg" media="(prefers-color-scheme: dark)">
+  <source srcset="./static/logo_color_light.svg" media="(prefers-color-scheme: light)">
+  <img src="./static/logo_color_light.svg" alt="Rewind JS">
 </picture>
 
 [![0 dependencies!](https://0dependencies.dev/0dependencies.svg)](https://0dependencies.dev)
