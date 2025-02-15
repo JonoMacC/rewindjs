@@ -80,21 +80,6 @@ const cel = {
         // Set up setter observation if available
         if (descriptor && (descriptor.set || descriptor.get)) {
           this.#observeWithSetter(prop, descriptor);
-        }
-
-        const strategyMap = {
-          scrollTop: () => this.#observeWithEvents(prop, ['scroll']),
-          clientHeight: () => this.#observeWithResize(prop),
-          clientWidth: () => this.#observeWithResize(prop),
-          childElementCount: () => this.#observeWithMutation(prop),
-          currentTime: () => this.#observeWithEvents(prop, ['timeupdate', 'seeked']),
-          selectionStart: () => this.#observeWithEvents(prop, ['select', 'keyup', 'mouseup']),
-          isVisible: () => this.#observeWithIntersection(prop),
-        };
-
-        const strategy = strategyMap[prop];
-        if (strategy) {
-          strategy();
         } else {
           this.#observeWithPolling(prop);
         }
@@ -113,30 +98,6 @@ const cel = {
           enumerable: descriptor.enumerable,
           configurable: descriptor.configurable
         });
-      }
-
-      #observeWithEvents(prop, events) {
-        const handler = () => this.#updateProperty(prop, this[prop]);
-        events.forEach(event => this.#element.addEventListener(event, handler));
-        this.#eventListeners.set(prop, { events, handler });
-      }
-
-      #observeWithResize(prop) {
-        const observer = new ResizeObserver(() => this.#updateProperty(prop, this.#element[prop]));
-        observer.observe(this.#element);
-        this.#observers.set(prop, { type: 'resize', observer });
-      }
-
-      #observeWithMutation(prop) {
-        const observer = new MutationObserver(() => this.#updateProperty(prop, this.#element[prop]));
-        observer.observe(this.#element, { childList: true, subtree: false });
-        this.#observers.set(prop, { type: 'mutation', observer });
-      }
-
-      #observeWithIntersection(prop) {
-        const observer = new IntersectionObserver(entries => this.#updateProperty(prop, entries[0].isIntersecting));
-        observer.observe(this.#element);
-        this.#observers.set(prop, { type: 'intersection', observer });
       }
 
       #observeWithPolling(prop) {
@@ -167,7 +128,7 @@ const cel = {
             : clearInterval(observer);
         });
 
-        this.#eventListeners.forEach(({ events, handler }, prop) =>
+        this.#eventListeners.forEach(({ events, handler }, _) =>
           events.forEach(event => this.removeEventListener(event, handler))
         );
 
@@ -277,56 +238,8 @@ const cel = {
   },
 
   /**
-   *
-   * Generates an alphabetic label from an index in the format a-z, aa-zz, etc.
-   * Can be used for column headers in tables
-   *
-   * @param {number} index - The index for the label (e.g. column number)
-   * @returns {string} - The label for the index
-   */
-  alphaLabel(index) {
-    const alphabet = "abcdefghijklmnopqrstuvwxyz";
-    let result = "";
-
-    // Handle the case where index is 0 or negative
-    if (index <= 0) return "a";
-
-    index--; // Adjust index to start at 0
-
-    while (index >= 0) {
-      result = alphabet[index % 26] + result;
-      index = Math.floor(index / 26) - 1;
-    }
-
-    return result;
-  },
-
-  /**
    * Math
    */
-
-  /**
-   * Clamps a value between a minimum and maximum value.
-   *
-   * @param {number} value - The value to be clamped.
-   * @param {number} min - The minimum value.
-   * @param {number} max - The maximum value.
-   * @returns {number} - The clamped value.
-   */
-  clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  },
-
-  /**
-   * Generates a random integer between a minimum and maximum value.
-   *
-   * @param {number} min - The minimum value.
-   * @param {number} max - The maximum value.
-   * @returns {number} - A random integer between min and max (inclusive).
-   */
-  randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  },
 
   /**
    * Generates a random 7-character string (excluding vowels) for use as
@@ -336,42 +249,6 @@ const cel = {
    */
   randomId() {
     return "_" + Math.random().toString(36).substring(2, 9);
-  },
-
-  /**
-   * Linearly interpolates between two numbers.
-   *
-   * @param {number} a - The starting value.
-   * @param {number} b - The ending value.
-   * @param {number} t - The interpolation value (between 0 and 1).
-   * @returns {number} - The interpolated value.
-   */
-  lerp(a, b, t) {
-    return a + (b - a) * t;
-  },
-
-  /**
-   * Wraps a value around a minimum and maximum value.
-   * Useful for dealing with angles or cyclic values.
-   *
-   * @param {number} value - The value to wrap.
-   * @param {number} min - The minimum value.
-   * @param {number} max - The maximum value.
-   * @returns {number} - The wrapped value.
-   */
-  wrap(value, min, max) {
-    return ((value - min) % (max - min)) + min;
-  },
-
-  /**
-   * Rounds a value to the nearest step.
-   *
-   * @param {number} value - The value to round.
-   * @param {number} [step=1] - The step to round to.
-   * @returns {number} - The rounded value.
-   */
-  round(value, step = 1) {
-    return Math.round(value / step) * step;
   },
 
   /**
@@ -508,33 +385,6 @@ const cel = {
   },
 
   /**
-   * Throttles a function call.
-   *
-   * This function returns a new function that wraps the original function and
-   * prevents it from being called more than once in a given time period.
-   *
-   * @param {function} fn - The function to throttle.
-   * @param {number} delay - The time in milliseconds to delay the function call.
-   * @returns {function} - A new function that wraps the original function and throttles it.
-   *
-   * @example
-   * const throttledClick = document.getElementById("click").addEventListener(
-   *   "click",
-   *   myFunction.throttle(500)
-   * );
-   */
-  throttle(fn, delay) {
-    let lastCall = 0;
-    return function (...args) {
-      const now = Date.now();
-      if (now - lastCall >= delay) {
-        lastCall = now;
-        return fn.apply(this, args);
-      }
-    };
-  },
-
-  /**
    * Events
    */
 
@@ -555,41 +405,6 @@ const cel = {
     const key = event.key.length === 1 ? event.key.toUpperCase() : event.key;
 
     return modifiers.length > 0 ? modifiers.join("+") + `+${key}` : key;
-  },
-
-  /**
-   * Delegates an event to the closest matching selector.
-   *
-   * @param {Event} event - The event to delegate.
-   * @param {string} selector - A CSS selector string.
-   * @param {function} handler - The event handler function.
-   * @example
-   * const event = new MouseEvent("click", {
-   *   bubbles: true,
-   *   cancelable: true,
-   *   view: window,
-   * });
-   *
-   * event.delegate(".my-selector", function (event) {
-   *   // Handle the event
-   * });
-   */
-  delegate(event, selector, handler) {
-    event.target.addEventListener(this.type, function (e) {
-      const targetElement = e.target.closest(selector);
-      if (targetElement) {
-        handler.call(targetElement, e);
-      }
-    });
-  },
-
-  /**
-   * Logs the event details.
-   *
-   * @param {Event} event - The event to log.
-   */
-  log(event) {
-    console.log(`Event: ${event.type}`, event);
   },
 
   /**
@@ -671,127 +486,6 @@ const cel = {
     }
 
     return null;
-  },
-
-  /**
-   * Observes a property on a target HTMLElement and calls a callback when it changes.
-   *
-   * @param {HTMLElement} target - The target object
-   * @param {string} prop - The property to observe
-   * @param {function} callback - The callback to call when the property changes
-   * @returns {function} A cleanup function to remove all observers and listeners
-   *
-   * @example
-   * const obj = document.querySelector('.rect');
-   * const cleanup = observeProperty(obj, 'clientWidth', () => {
-   *   console.log('width changed');
-   * });
-   *
-   * // Call cleanup function to remove all observers
-   * cleanup();
-   */
-  observeProperty(target, prop, callback) {
-    const eventListeners = new Set();
-    const observers = new Set();
-    let pollingInterval = null;
-
-    const strategyMap = {
-      value: () => observeWithEvents(['input', 'change']),
-      checked: () => observeWithEvents(['change']),
-      indeterminate: () => observeWithEvents(['change']),
-      scrollLeft: () => observeWithEvents(['scroll']),
-      scrollTop: () => observeWithEvents(['scroll']),
-      clientHeight: () => observeWithResize(),
-      clientWidth: () => observeWithResize(),
-      childElementCount: () => observeWithMutation(),
-      currentTime: () => observeWithEvents(['timeupdate', 'seeked']),
-      selectionStart: () => observeWithEvents(['select', 'keyup', 'mouseup']),
-      isVisible: () => observeWithIntersection(),
-    };
-
-    const descriptor = cel.findDescriptor(target, prop);
-    const strategy = strategyMap[prop];
-
-    if (strategy) {
-      strategy();
-    } else if (descriptor)  {
-      observeWithSetter(descriptor);
-    } else {
-      observeWithPolling(prop);
-    }
-
-    function observeWithSetter(descriptor) {
-      const originalSet = descriptor.set;
-      Object.defineProperty(target, prop, {
-        get: descriptor.get,
-        set: (value) => {
-          if (originalSet) {
-            originalSet.call(target, value);
-          }
-          callback.call(target);
-        },
-        enumerable: descriptor.enumerable,
-        configurable: descriptor.configurable
-      });
-    }
-
-    function observeWithEvents(events) {
-      const wrappedCallback = () => callback.call(target);
-
-      events.forEach(event => {
-        target.addEventListener(event, wrappedCallback);
-        eventListeners.add({ event, callback: wrappedCallback });
-      });
-    }
-
-    function observeWithResize() {
-      const observer = new ResizeObserver(() => callback.call(target));
-      observer.observe(target);
-      observers.add(observer);
-    }
-
-    function observeWithMutation() {
-      const observer = new MutationObserver(() => callback.call(target));
-      observer.observe(target, { childList: true, subtree: false });
-      observers.add(observer);
-    }
-
-    function observeWithIntersection() {
-      const observer = new IntersectionObserver(() => callback.call(target));
-      observer.observe(target);
-      observers.add(observer);
-    }
-
-    function observeWithPolling() {
-      pollingInterval = setInterval(() => callback.call(target), 100);
-    }
-
-    // Cleanup function
-    return () => {
-      // Remove event listeners
-      eventListeners.forEach(({ event, callback }) => {
-        target.removeEventListener(event, callback);
-      });
-      eventListeners.clear();
-
-      // Disconnect observers
-      observers.forEach(observer => {
-        observer.disconnect();
-      });
-      observers.clear();
-
-      // Clear polling interval
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-        pollingInterval = null;
-      }
-
-      // Reset setter if it was modified
-      const originalDescriptor = Object.getOwnPropertyDescriptor(target, prop);
-      if (originalDescriptor) {
-        Object.defineProperty(target, prop, originalDescriptor);
-      }
-    };
   },
 
   /**
