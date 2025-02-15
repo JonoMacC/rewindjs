@@ -52,10 +52,10 @@ const cel = {
           this.#propertyValues.set(prop, this.#element[prop]);
 
           Object.defineProperty(this, prop, {
-            get() {
+            get: () => {
               return this.#propertyValues.get(prop);
             },
-            set(newValue) {
+            set: (newValue) => {
               this.#propertyValues.set(prop, newValue);
               this.#element[prop] = newValue;
             },
