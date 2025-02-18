@@ -30,8 +30,8 @@ const cel = {
           this.#syncAttribute(attr.name, attr.value);
         });
 
-        // // Forward property and method calls
-        // cel.forward(this, this.#element);
+        // Forward property and method calls
+        cel.forward(this, this.#element);
 
         this.#observeProperties(observe);
       }
