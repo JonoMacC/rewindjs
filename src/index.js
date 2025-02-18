@@ -2,4 +2,23 @@
 export {default as rewind} from './core/rewind.js';
 
 // Export all RewindInput components as named exports
-export * from './components/RewindInput.js';
+export {
+  RewindCheckbox,
+  RewindSelect,
+  RewindTextBox,
+  RewindNumberBox,
+  RewindTextarea,
+  RewindColorBox,
+  RewindDateBox,
+  RewindDateTimeLocalBox,
+  RewindMonthBox,
+  RewindTimeBox,
+  RewindEmailBox,
+  RewindPasswordBox,
+  RewindRange,
+  RewindSearchBox,
+  RewindUrlBox,
+  RewindTelBox,
+  RewindWeekBox,
+  RewindRadioGroup
+} from './components/RewindInput.js';
