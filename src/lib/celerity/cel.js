@@ -53,11 +53,13 @@ const cel = {
 
           Object.defineProperty(this, prop, {
             get: () => {
-              return this.#propertyValues.get(prop);
+              return this.#element[prop];
             },
             set: (newValue) => {
-              this.#propertyValues.set(prop, newValue);
-              this.#element[prop] = newValue;
+              if (this.#element[prop] !== newValue) {
+                this.#propertyValues.set(prop, newValue);
+                this.#element[prop] = newValue;
+              }
             },
             enumerable: true,
             configurable: true
@@ -80,6 +82,16 @@ const cel = {
         // Set up setter observation if available
         if (descriptor && (descriptor.set || descriptor.get)) {
           this.#observeWithSetter(prop, descriptor);
+        }
+
+        const strategyMap = {
+          value: () => this.#observeWithEvents(prop, ['input']),
+          checked: () => this.#observeWithEvents(prop, ['change']),
+        };
+
+        const strategy = strategyMap[prop];
+        if (strategy) {
+          strategy();
         } else {
           this.#observeWithPolling(prop);
         }
@@ -98,6 +110,12 @@ const cel = {
           enumerable: descriptor.enumerable,
           configurable: descriptor.configurable
         });
+      }
+
+      #observeWithEvents(prop, events) {
+        const handler = () => this.#updateProperty(prop, this.#element[prop]);
+        events.forEach(event => this.#element.addEventListener(event, handler));
+        this.#eventListeners.set(prop, { events, handler });
       }
 
       #observeWithPolling(prop) {
@@ -129,7 +147,7 @@ const cel = {
         });
 
         this.#eventListeners.forEach(({ events, handler }, _) =>
-          events.forEach(event => this.removeEventListener(event, handler))
+          events.forEach(event => this.#element.removeEventListener(event, handler))
         );
 
         this.#propertyValues.clear();
