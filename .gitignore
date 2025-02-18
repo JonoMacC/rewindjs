@@ -1,4 +1,5 @@
-**/.DS_Store
+# Distribution
+dist/
 
 # Node modules
 node_modules/
