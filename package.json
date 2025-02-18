@@ -1,11 +1,43 @@
 {
-  "devDependencies": {
-    "happy-dom": "^15.11.6",
-    "jsdom": "^25.0.0",
-    "vitest": "^2.0.5"
+  "name": "rewind",
+  "version": "0.1.0-beta.1",
+  "author": "Jon MacCaull",
+  "license": "MIT",
+  "description": "An undo/redo library for web components that enables fine-grained state management.",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "unpkg": "dist/index.umd.js",
+  "exports": {
+    "import": "./dist/index.mjs"
   },
+  "source": "src/index.js",
+  "type": "module",
   "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
     "test": "vitest"
   },
-  "type": "module"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JonoMacC/rewindjs.git"
+  },
+  "keywords": [
+    "undo-redo",
+    "history management",
+    "web components"
+  ],
+  "bugs": {
+    "url": "https://github.com/JonoMacC/rewindjs/issues"
+  },
+  "homepage": "https://github.com/JonoMacC/rewindjs#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "happy-dom": "^15.11.6",
+    "jsdom": "^25.0.0",
+    "rollup": "^4.34.8",
+    "vitest": "^2.0.5"
+  }
 }
