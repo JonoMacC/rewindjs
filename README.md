@@ -5,6 +5,9 @@
 </picture>
 
 [![0 dependencies!](https://0dependencies.dev/0dependencies.svg)](https://0dependencies.dev)
+![npm downloads](https://img.shields.io/npm/dt/rewind-js)
+![npm latest](https://img.shields.io/npm/v/rewind-js)
+![npm license](https://img.shields.io/npm/l/rewind-js)
 
 **Rewind JS** is a library for adding undo/redo functionality to JavaScript classes and Web Components.
 
