@@ -6,7 +6,7 @@
 
 [![0 dependencies!](https://0dependencies.dev/0dependencies.svg)](https://0dependencies.dev)
 
-Rewind is a library for adding undo/redo functionality to JavaScript classes and Web Components.
+**Rewind JS** is a library for adding undo/redo functionality to JavaScript classes and Web Components.
 
 **Try it** at [Rewind JS](https://rewindjs.netlify.app)
 
@@ -14,11 +14,11 @@ Rewind is a library for adding undo/redo functionality to JavaScript classes and
 
 ### Auto Recording
 
-Rewind automatically records changes to a specified set of properties in a component. Properties to be recorded are specified in the `observe` options parameter. Property changes made as part of a method call can also be tracked – these are specified in the `coalesce` options parameter.
+Automatically records changes to a specified set of properties in a component. Properties to be recorded are specified in the `observe` options parameter. Property changes made as part of a method call can also be tracked – these are specified in the `coalesce` options parameter.
 
 ### Multiple Undo Models
 
-Rewind supports `linear` and `history` undo models. 
+Supports `linear` and `history` undo models. 
 
 - `linear` overwrites future states when a change is made from a past state – this is the behavior typical in most applications. 
 - `history` preserves all changes as part of an immutable tree.
@@ -46,20 +46,20 @@ Rewindable HTML input elements are included out-of-the-box. They can be used as 
 ## Installation
 
 ```bash
-npm install rewind
+npm install rewind-js
 ```
 
 ## Importing
 
 ```javascript
 // Import from CDN
-import rewind from 'https://cdn.skypack.dev/rewind';
+import rewind from 'https://cdn.skypack.dev/rewind-js';
 
 // Import from npm
-import rewind from 'rewind';
+import rewind from 'rewind-js';
 
 // Import rewindable HTML input elements
-import { RewindCheckbox, RewindTextBox } from 'rewind';
+import { RewindCheckbox, RewindTextBox } from 'rewind-js';
 ```
 
 ## Usage
@@ -67,7 +67,7 @@ import { RewindCheckbox, RewindTextBox } from 'rewind';
 ### Example: Defining a Custom Component
 Define the rewindable class in JavaScript:
 ```javascript
-import rewind from 'rewind';
+import rewind from 'rewind-js';
 
 // Import or define the base component class
 import Counter from './counter.js';
@@ -89,7 +89,7 @@ Use the component as a custom element in HTML:
 
 ```html
 <script>
-import { RewindCheckbox, RewindSelect } from 'rewind';
+import { RewindCheckbox, RewindSelect } from 'rewind-js';
 </script>
 
 <rw-checkbox id="hints" checked></rw-checkbox>
@@ -182,7 +182,7 @@ rewind(
 
 ## ⚠️ Caution
 
-Rewind is not optimized for performance; it is intended for prototyping and proof of concepts.
+Rewind JS is not optimized for performance; it is intended for prototyping and proof of concepts.
 
 ## Motivation
 
