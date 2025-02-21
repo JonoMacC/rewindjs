@@ -1,6 +1,6 @@
 {
   "name": "rewind-js",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "author": "Jon MacCaull",
   "license": "MIT",
   "description": "An undo/redo library for web components that enables fine-grained state management.",
@@ -14,6 +14,13 @@
   },
   "source": "src/index.js",
   "type": "module",
+  "files": [
+    "dist",
+    "static",
+    "package.json",
+    "README.md",
+    "LICENSE.txt"
+  ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
