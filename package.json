@@ -1,12 +1,14 @@
 {
   "name": "rewind-js",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "author": "Jon MacCaull",
   "license": "MIT",
   "description": "An undo/redo library for web components that enables fine-grained state management.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
-  "unpkg": "dist/index.umd.js",
+  "browser": "dist/index.min.js",
+  "unpkg": "dist/index.min.js",
+  "jsdelivr": "dist/index.min.js",
   "exports": {
     "import": "./dist/index.mjs"
   },
@@ -35,6 +37,7 @@
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
     "happy-dom": "^15.11.6",
     "jsdom": "^25.0.0",
     "rollup": "^4.34.8",

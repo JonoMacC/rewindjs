@@ -1,6 +1,7 @@
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import babel from "@rollup/plugin-babel";
+import terser from "@rollup/plugin-terser";
 
 /** @type {import('rollup').RollupOptions} */
 export default {
@@ -12,10 +13,11 @@ export default {
       sourcemap: true,
     },
     {
-      file: "dist/index.umd.js",
+      file: "dist/index.min.js",
       format: "umd",
       name: "Rewind",
       sourcemap: true,
+      plugins: [terser()],
     }
   ],
   plugins: [
