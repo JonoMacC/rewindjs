@@ -1,6 +1,6 @@
 {
   "name": "rewind-js",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0-beta.4",
   "author": "Jon MacCaull",
   "license": "MIT",
   "description": "An undo/redo library for web components that enables fine-grained state management.",
