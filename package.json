@@ -24,7 +24,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
-    "test": "vitest"
+    "test": "vitest",
+    "release:beta": "bash ./scripts/release-beta.sh"
   },
   "repository": {
     "type": "git",
