@@ -11,7 +11,7 @@
 
 **Rewind JS** is a library for adding undo/redo functionality to JavaScript classes and Web Components.
 
-**Try it** at [Rewind JS](https://rewindjs.netlify.app)
+**Try it** at [Rewind JS](https://rewindjs.dev)
 
 ## Features
 
