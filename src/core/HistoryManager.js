@@ -1,5 +1,6 @@
 // Utilities
 import cel from "../lib/celerity/cel.js";
+import { LogLevel, Logger } from "../__utils__/logger.js";
 
 // Type definitions
 import '../__types__/types.js';
@@ -30,9 +31,15 @@ export class HistoryManager {
   #history = [];
   #index = -1;
   #model;
+  #logger;
 
-  constructor(model = UndoModel.LINEAR) {
-    this.#model = model;
+  /**
+   * @param {UndoModel|{model?: UndoModel, logLevel?: LogLevel, logger?: Logger}} [options=UndoModel.LINEAR] - History options.
+   */
+  constructor(options = UndoModel.LINEAR) {
+    const params = typeof options === "string" ? { model: options } : options;
+    this.#logger = params.logger || new Logger(params.logLevel || LogLevel.SILENT);
+    this.#model = params.model || UndoModel.LINEAR;
   }
 
   get index() {
@@ -80,12 +87,12 @@ export class HistoryManager {
    */
   record(state) {
     if (cel.isEmpty(state)) {
-      console.info("State is empty, not recording.");
+      this.#logger.info("State is empty, not recording.");
       return false;
     }
 
     if (cel.deepEqual(state, this.state)) {
-      console.info("State unchanged, not recording.");
+      this.#logger.info("State unchanged, not recording.");
       return false;
     }
 
@@ -125,9 +132,9 @@ export class HistoryManager {
     this.history = newHistory;
     this.#index++;
 
-    console.group("Recorded state to history: ");
-    console.table(this.history);
-    console.groupEnd();
+    this.#logger.group("Recorded state to history: ");
+    this.#logger.table(this.history);
+    this.#logger.groupEnd();
 
     return true;
   }
@@ -138,7 +145,7 @@ export class HistoryManager {
    * @returns {Object|null} - The state at that index
    */
   travel(index) {
-    console.info({
+    this.#logger.debug({
       index,
       length: this.history.length,
       history: this.history,

@@ -1,5 +1,6 @@
 // Utilities
 import { generateKey } from "../__utils__/generateKey.js";
+import { LogLevel, Logger } from "../__utils__/logger.js";
 import cel from "../lib/celerity/cel.js";
 
 export class StateManager {
@@ -9,6 +10,7 @@ export class StateManager {
   #childTypes = new Map();
   #childPositions = new Map();
   #restoreHandler;
+  #logger;
 
   /**
    * A utility class for managing the state of a target object with separate rewindable children.
@@ -18,10 +20,14 @@ export class StateManager {
    * @param {string[]} options.observe - Properties to observe on the target
    * @param {RewindCollection} options.children - Collection of rewindable children
    * @param {RestoreHandler} options.restoreHandler - Handler for updating restored rewindable children
+   * @param {LogLevel} options.logLevel - Log level
+   * @param {Logger} options.logger - Logger instance
    */
   constructor(target, {
     observe = [],
     children = new Map(),
+    logLevel = LogLevel.SILENT,
+    logger = null,
     restoreHandler = {
       add: (id, child) => this.addChild(id, child),
       remove: (id) => this.removeChild(id),
@@ -30,6 +36,7 @@ export class StateManager {
     this.#target = target;
     this.#observe = new Set(observe);
     this.#children = children;
+    this.#logger = logger || new Logger(logLevel);
     this.#restoreHandler = restoreHandler;
 
     // Register child types
@@ -201,7 +208,7 @@ export class StateManager {
     if (this.#childTypes.has(type)) {
       return;
     }
-    console.info(`Registering child type: ${type}`);
+    this.#logger.info(`Registering child type: ${type}`);
     this.#childTypes.set(type, ChildClass);
   }
 

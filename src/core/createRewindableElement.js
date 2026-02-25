@@ -2,6 +2,7 @@ import {createRewindable} from "./createRewindable.js";
 import {EventHandler} from "./EventHandler.js";
 
 // Utilities
+import { LogLevel, Logger } from "../__utils__/logger.js";
 import cel from "../lib/celerity/cel.js";
 
 // Type definitions
@@ -93,6 +94,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
     #rewindable;
     #eventHandler;
     #propertyHandlers = new Map();
+    #logger;
 
     /**
      * @param {...any} args - Arguments for the TargetClass constructor.
@@ -101,11 +103,12 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
       super(...args);
       const options = this.constructor.rewindOptions;
       const children = args[0]?.children || new Map();
+      this.#logger = options.logger || new Logger(options.logLevel || LogLevel.SILENT);
 
       this.#setupPropertyHandlers(options.observe, options.debounce);
 
       // Isolate the rewind options that are relevant to rewindable (no keys or debounce)
-      const rewindOptions = {...options};
+      const rewindOptions = { ...options, logger: this.#logger };
       delete rewindOptions.keys;
       delete rewindOptions.debounce;
 
@@ -516,7 +519,7 @@ export function createRewindableElement(TargetClass, rewindOptions = {}) {
 
           return originalResult;
         } catch (error) {
-          console.error(`Error during mutation operation:`, error);
+          this.#logger.error(`Error during mutation operation:`, error);
           throw error;
         }
       };

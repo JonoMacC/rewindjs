@@ -167,6 +167,7 @@ rewind(
   base, // The base class to make rewindable
   {
     model: 'linear', // ? 'linear' | 'history' The undo model
+    logLevel: 'silent', // ? 'silent' | 'error' | 'warn' | 'info' | 'debug'
     observe: [], // ? string[] Properties to record when they change
     coalesce: [], // ? string[] Methods to record when they are called
     debounce: {}, // ? { [property: string]: number } Properties to debounce and debounce time in milliseconds

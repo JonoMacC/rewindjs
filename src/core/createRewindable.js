@@ -2,6 +2,7 @@ import {HistoryManager} from "./HistoryManager.js";
 import {StateManager} from "./StateManager.js";
 
 // Utilities
+import { LogLevel, Logger } from "../__utils__/logger.js";
 import cel from "../lib/celerity/cel.js";
 
 // Type definitions
@@ -83,6 +84,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     #target;
     #historyManager;
     #stateManager;
+    #logger;
     #recording = true;
     #baselineRecorded = false;
 
@@ -95,6 +97,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
        */
       const config = args[0] && typeof args[0] === 'object' ? args[0] : {};
       const options = this.constructor.rewindOptions;
+      this.#logger = options.logger || new Logger(options.logLevel || LogLevel.SILENT);
 
       const targetClass = this.constructor.targetClass;
       this.#target = (typeof HTMLElement !== 'undefined'
@@ -102,10 +105,14 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         ? document.createElement(targetClass?.tagName)
         : new targetClass(...args.slice(1));
 
-      this.#historyManager = new HistoryManager(options.model);
+      this.#historyManager = new HistoryManager({
+        model: options.model,
+        logger: this.#logger,
+      });
       this.#stateManager = new StateManager(options.host || this.#target, {
           observe: options.observe,
           children: config.children,
+          logger: this.#logger,
           restoreHandler: options.restoreHandler,
         });
 
@@ -243,7 +250,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
         methods: new Set(options.coalesce || []),
         set: (prop) => {
           if (this.#recording) {
-            console.info(`Observed change for ${prop}...`);
+            this.#logger.info(`Observed change for ${prop}...`);
             const handler = options.propertyHandlers?.get(prop);
             if (handler) {
               handler();
@@ -259,7 +266,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
 
       // Reassign intercept to a no-op after running once
       this.intercept = () => {
-        console.warn('Intercept has already been set up. Skipping.');
+        this.#logger.warn('Intercept has already been set up. Skipping.');
       };
     }
 
@@ -271,7 +278,7 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
      */
     record() {
       if (!this.#recording) return this;
-      console.info(`Recording snapshot...`);
+      this.#logger.info(`Recording snapshot...`);
       this.#historyManager.record(this.rewindState);
       return this;
     }
@@ -427,4 +434,3 @@ export function createRewindable(TargetClass, rewindOptions = {}) {
     }
   }
 }
-
