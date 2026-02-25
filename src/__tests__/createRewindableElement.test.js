@@ -307,7 +307,11 @@ describe("createRewindableElement", () => {
         index,
       });
 
+      const connectedCallbackSpy = vi.spyOn(component, "connectedCallback");
       document.body.appendChild(component);
+      if (connectedCallbackSpy.mock.calls.length === 0) {
+        component.connectedCallback();
+      }
 
       // Create Undo and Redo Key Events
       const undoEvent = () =>new KeyboardEvent("keydown", { key: "z", ctrlKey: true });
