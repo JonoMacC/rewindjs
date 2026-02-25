@@ -2,6 +2,9 @@
 
 set -e
 
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$ROOT_DIR"
+
 echo "🚦 Releasing beta version..."
 
 # Step 1: Ensure working directory is clean
