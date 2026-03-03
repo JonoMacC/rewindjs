@@ -16,12 +16,12 @@ export class StateManager {
    * A utility class for managing the state of a target object with separate rewindable children.
    *
    * @param {Object} target - The target object to manage
-   * @param {Object} options - Options
-   * @param {string[]} options.observe - Properties to observe on the target
-   * @param {RewindCollection} options.children - Collection of rewindable children
-   * @param {RestoreHandler} options.restoreHandler - Handler for updating restored rewindable children
-   * @param {LogLevel} options.logLevel - Log level
-   * @param {Logger} options.logger - Logger instance
+   * @param {Object} [options={}] - Options
+   * @param {string[]} [options.observe=[]] - Properties to observe on the target
+   * @param {RewindCollection} [options.children=new Map()] - Collection of rewindable children
+   * @param {RestoreHandler} [options.restoreHandler] - Handler for updating restored rewindable children
+   * @param {LogLevel} [options.logLevel=LogLevel.SILENT] - Log level
+   * @param {Logger|null} [options.logger=null] - Logger instance
    */
   constructor(target, {
     observe = [],
